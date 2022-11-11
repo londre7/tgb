@@ -1,0 +1,38 @@
+create database tgbot character set utf8mb4;
+USE tgbot;
+
+CREATE TABLE tgb_users
+( 
+	id BIGINT UNSIGNED AUTO_INCREMENT, 
+	uid BIGINT UNSIGNED, 
+	username VARCHAR(80), 
+	first_name VARCHAR(128), 
+	last_name VARCHAR(128), 
+	language_code VARCHAR(24), 
+	last_message_time INT,  
+	phone_number VARCHAR(14) DEFAULT '', 
+	access BIGINT UNSIGNED DEFAULT 0,
+	notify BIGINT UNSIGNED DEFAULT 0,
+	state INT DEFAULT 0, 
+	state_params VARCHAR(256) DEFAULT '', 
+	PRIMARY KEY (id) 
+);
+
+CREATE TABLE tgb_callbacks
+( 
+	id BIGINT UNSIGNED AUTO_INCREMENT, 
+	callback_id VARCHAR(32), 
+	callback_type VARCHAR(32), 
+	callback_params VARCHAR(256) DEFAULT '{}',
+	to_uid BIGINT UNSIGNED DEFAULT 0,
+	activate_uid BIGINT UNSIGNED DEFAULT 0,
+	PRIMARY KEY (id) 
+);
+
+CREATE TABLE tgb_find
+(
+	id BIGINT UNSIGNED AUTO_INCREMENT,
+	uid BIGINT UNSIGNED UNIQUE, 
+	start_find_time INT DEFAULT 0,  
+	PRIMARY KEY (id)
+);

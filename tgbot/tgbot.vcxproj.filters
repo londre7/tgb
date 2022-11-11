@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Исходные файлы\json">
+      <UniqueIdentifier>{e0ebd8eb-2f13-4258-a743-e413feecfc5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы заголовков\json">
+      <UniqueIdentifier>{945450b1-d9a4-4627-9eec-dc9f12bface3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\json\dump.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\error.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\hashtable.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\hashtable_seed.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\load.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\memory.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\pack_unpack.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\strbuffer.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\strconv.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\utf.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\json\value.c">
+      <Filter>Исходные файлы\json</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\configs.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\http.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\processing_commands.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\socket.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\tg_bot.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\threads.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\user.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\utils.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\botapi.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\callback.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\parser.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\smmysql.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\botutils.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\db.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\smkeylist.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\json\hashtable.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\jansson.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\jansson_config.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\jansson_private.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\jansson_private_config.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\lookup3.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\strbuffer.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\utf.h">
+      <Filter>Файлы заголовков\json</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\configs.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\http.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\processing_commands.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\smdate.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\smstring.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\socket.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\tg_bot.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\threads.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\user.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\utils.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\bitmask.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\botapi.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\botmessages.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\botutils.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\callback.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\parser.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\smmysql.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\db.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\smkeylist.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\custombuffer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
