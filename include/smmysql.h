@@ -45,10 +45,9 @@ class SMMYSQL_Table
 		}
 };
 
-bool sm_mysql_query(MYSQL* Connection, SMAnsiString Query);
-MYSQL_RES* sm_mysql_query_v2(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString& Query);
-SMMYSQL_Table* sm_mysql_query_v3(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString& Query);
-bool sm_mysql_query_insert(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString& Query);
-uint64_t sm_mysql_query_insert_ret_id(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString& Query);
+MYSQL_RES* sm_mysql_query_v2(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query);
+SMMYSQL_Table* sm_mysql_query_v3(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query);
+bool sm_mysql_query_insert(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query);
+uint64_t sm_mysql_query_insert_ret_id(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query);
 
 #endif

@@ -22,6 +22,8 @@
 #define PERMISSION_FLAG_14                0x0000000000004000ULL
 #define PERMISSION_FLAG_15                0x0000000000008000ULL
 
+#define FLAGS_0_1 PERMISSION_MANAGE_USR_ACCESS|PERMISSION_USR_INFO
+
 // уведомления
 #define NOTIFY_REGISTER_NEW_USER          0x0000000000000001ULL // регистрация новых пользователей
 
@@ -30,6 +32,8 @@ extern StringList* GetUsrNotifyStrList();
 
 enum // состояния пользователей
 {
+	USRSTATE_ALL=-1, // только для описания команд
+
 	USRSTATE_FREE=0,
 	USRSTATE_FIND,
 	USRSTATE_CHAT,

@@ -17,6 +17,6 @@ void sc_processing_getnotify(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Cha
 void sc_processing_setnotify(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID);
 
 void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, SMAnsiString Params, uint64_t MessageID);
-void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const SMAnsiString& Message, uint64_t MessageID);
+void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, TGBOT_Message *message);
 
 #endif

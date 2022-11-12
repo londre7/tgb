@@ -2,12 +2,16 @@
 
 static SMAnsiString MakeFullUserName(const SMAnsiString& lastname, const SMAnsiString& firstname, const SMAnsiString &username)
 {
-	return lastname + SMAnsiString((!lastname.IsEmpty()) ? " " : "") + firstname + SMAnsiString((!username.IsEmpty())?SMAnsiString::smprintf(" (%s)", C_STR(MakeUsername(username))):"");
+	//return lastname + SMAnsiString((!lastname.IsEmpty()) ? " " : "") + firstname + SMAnsiString((!username.IsEmpty())?SMAnsiString::smprintf(" (%s)", C_STR(MakeUsername(username))):"");
+	SMAnsiString fn;
+	if (!lastname.IsEmpty()) fn += (lastname + " ");
+	fn += firstname;
+	if (!username.IsEmpty()) fn += SMAnsiString::smprintf(" (%s)", C_STR(username));
+	return fn;
 }
 
 SMAnsiString MakeFullUserName(const TGBOT_User* user, bool useUsername)
 {
-	//return user->LastName + SMAnsiString((!user->LastName.IsEmpty()) ? " " : "") + user->FirstName;
 	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
 }
 
@@ -18,7 +22,7 @@ SMAnsiString MakeFullUserName(const DB_User* user, bool useUsername)
 
 SMAnsiString MakeUsername(const SMAnsiString& username)
 {
-	return (username!="")?SMAnsiString::smprintf("@%s", C_STR(username)):"";
+	return (!username.IsEmpty())?SMAnsiString::smprintf("@%s", C_STR(username)):"";
 }
 
 SMAnsiString GetMonthStr(int month)

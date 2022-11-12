@@ -211,24 +211,14 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 
 HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, int& Err)
 {
-	int				sock;
-	int				socket_err;
-	SSL* sock_ssl = nullptr;
-	SMAnsiString		req,
-		recv_line;
-	char* recv_buf;
-	char			http_signature[5];
-	HTTP_Response* resp;
-	SMAnsiString		temp,
-		key,
-		value;
-	int				stop_index;
-
 	// получаем IP-адрес из имени хоста
 	SMAnsiString ip_by_host = GetIPFromHost(Host);
 	if (ip_by_host == "") { Err = 1000; return NULL; }  // dns not resolved
 
 	// соединяемся с сервером
+	int sock;
+	int	socket_err;
+	SSL* sock_ssl = nullptr;
 	if (UseSSL)
 	{
 		sock_ssl = SockConnectWithSSL(sock, ip_by_host, Port, socket_err);
@@ -245,6 +235,7 @@ HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString H
 	}
 
 	// делаем запрос
+	SMAnsiString req;
 	SMAnsiString get_doc = ((UseSSL) ? "https://" : "http://") + HeaderHost + Doc;
 	req.smprintf_s
 	(
@@ -275,7 +266,7 @@ HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString H
 	}
 
 	// получаем ответ
-	resp = (UseSSL)?RecvResponse(sock_ssl, Err):nullptr; // TODO: сделать для обычного сокета
+	HTTP_Response *resp = (UseSSL)?RecvResponse(sock_ssl, Err):nullptr; // TODO: сделать для обычного сокета
 	
 	// закрываем соединение
 	if (UseSSL)
@@ -290,24 +281,14 @@ HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString H
 
 HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err)
 {
-	int				sock;
-	int				socket_err;
-	SSL				*sock_ssl = nullptr;
-	SMAnsiString	req,
-					recv_line;
-	char			*recv_buf;
-	char			http_signature[5];
-	HTTP_Response	*resp;
-	SMAnsiString	temp,
-					key,
-					value;
-	int				stop_index;
-
 	// получаем IP-адрес из имени хоста
 	SMAnsiString ip_by_host = GetIPFromHost(Host);
 	if(ip_by_host == "") { Err = 1000; return NULL; }  // dns not resolved
 	
 	// соединяемся с сервером
+	int	sock;
+	int	socket_err;
+	SSL* sock_ssl = nullptr;
 	if(UseSSL) 
 	{
 		sock_ssl = SockConnectWithSSL(sock, ip_by_host, Port, socket_err);
@@ -326,6 +307,7 @@ HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString 
 	// делаем запрос
 	SMAnsiString get_doc = ((UseSSL)? "https://" : "http://") + HeaderHost + Doc;
 	SMAnsiString _ContentReq;
+	SMAnsiString req;
 	if (!IsStrEmpty(ContentType))
 	{
 		_ContentReq.smprintf_s
@@ -371,7 +353,7 @@ HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString 
 	}
 	
 	// получаем ответ
-	resp = (UseSSL) ? RecvResponse(sock_ssl, Err) : nullptr; // TODO: сделать для обычного сокета
+	HTTP_Response *resp = (UseSSL) ? RecvResponse(sock_ssl, Err) : nullptr; // TODO: сделать для обычного сокета
 	
 	// закрываем соединение
 	if (UseSSL)

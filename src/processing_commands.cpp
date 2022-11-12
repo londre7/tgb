@@ -3,29 +3,29 @@
 
 // список команд и их обработчики
 typedef void (*cmd_proc_func)(DB_User&, TGBOT_User*, TGBOT_Chat*, const StringList*, uint64_t);
-struct 
+struct Cmd
 { 
 	const char* cmd;
 	const char* replybtn;
 	cmd_proc_func proc;
+	int usrstate;
 	uint64_t permission;
 	bool and_flag; // если true, доступ только когда все флажки из permission стоят у пользователя, если false - хотя бы один.
 } 
 CmdDef[] =
 {
-	// команда           соотв. кнопка            обработчик                    необходимые разрешения                            флаг "И"  
-	{ "/start",          nullptr,                 sc_processing_start,          DEFAULT_USER_PERMISIONS,                          false },
-	{ "/find",           REPLYBTN_CAPTION_FIND,   sc_processing_find,           DEFAULT_USER_PERMISIONS,                          false },
-	{ "/cancel",         REPLYBTN_CAPTION_CANCEL, sc_processing_cancel,         DEFAULT_USER_PERMISIONS,                          false },
-	{ "/stop",           REPLYBTN_CAPTION_STOP,   sc_processing_stop,           DEFAULT_USER_PERMISIONS,                          false },
-	{ "/ap",             nullptr,                 sc_processing_ap,             PERMISSION_MANAGE_USR_ACCESS,                     false },
-	{ "/getpermissions", nullptr,                 sc_processing_getpermissions, PERMISSION_MANAGE_USR_ACCESS,                     false },
-	{ "/setpermissions", nullptr,                 sc_processing_setpermissions, PERMISSION_MANAGE_USR_ACCESS,                     false },
-	{ "/getuserinfo",    nullptr,                 sc_processing_getuserinfo,    PERMISSION_MANAGE_USR_ACCESS|PERMISSION_USR_INFO, false },
-	{ "/getnotify",      nullptr,                 sc_processing_getnotify,      PERMISSION_MANAGE_USR_ACCESS,                     false },
-	{ "/setnotify",      nullptr,                 sc_processing_setnotify,      PERMISSION_MANAGE_USR_ACCESS,                     false },
+	// команда           соотв. кнопка            обработчик                    необх. сост.   необходимые разрешения        флаг "И"  
+	{ "/start",          nullptr,                 sc_processing_start,          USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
+	{ "/find",           REPLYBTN_CAPTION_FIND,   sc_processing_find,           USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
+	{ "/cancel",         REPLYBTN_CAPTION_CANCEL, sc_processing_cancel,         USRSTATE_ALL,  DEFAULT_USER_PERMISIONS,      false },
+	{ "/stop",           REPLYBTN_CAPTION_STOP,   sc_processing_stop,           USRSTATE_CHAT, DEFAULT_USER_PERMISIONS,      false },
+	{ "/ap",             nullptr,                 sc_processing_ap,             USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
+	{ "/getpermissions", nullptr,                 sc_processing_getpermissions, USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
+	{ "/setpermissions", nullptr,                 sc_processing_setpermissions, USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
+	{ "/getuserinfo",    nullptr,                 sc_processing_getuserinfo,    USRSTATE_FREE, FLAGS_0_1,                    false },
+	{ "/getnotify",      nullptr,                 sc_processing_getnotify,      USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
+	{ "/setnotify",      nullptr,                 sc_processing_setnotify,      USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
 };
-const size_t CmdDefNum = SizeOfArray(CmdDef);
 
 static bool CheckUserPermission(uint64_t cmdPermissions, const DB_User &user, bool and_flag)
 {
@@ -35,22 +35,54 @@ static bool CheckUserPermission(uint64_t cmdPermissions, const DB_User &user, bo
 	return (accessed || IsSuperUser(user.Username));
 }
 
+static const char* CheckUserState(int cmd_usrstate, const DB_User& user)
+{
+	const char *EMPTYSTR = "";
+	// здесь объявляем кастомные сообщения, которые будут выводиться, если пользователь не в нужном состянии
+	static std::map<int, const char*> msgMap =
+	{
+		{ USRSTATE_CHAT, BOTMSG_OUTSIDE_CHAT }
+	};
+
+	if (cmd_usrstate == USRSTATE_ALL) return EMPTYSTR;
+	if (cmd_usrstate != user.State)
+	{
+		const char* ret_msg = BOTMSG_USR_NO_STATE_FREE;
+		try
+		{
+			ret_msg = msgMap.at(cmd_usrstate);
+		}
+		catch (...) {}
+		return ret_msg;
+	}
+	else
+		return EMPTYSTR;
+}
+
+static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString& param, TGBOT_Message* message)
+{
+	// проверяем разрешения
+	if (!CheckUserPermission(cmd.permission, dbusrinfo, cmd.and_flag))
+		PERMISSION_DENIED(message->Chat->Id);
+
+	// проверяем необходимое состяние
+	const char* err_msg = CheckUserState(cmd.usrstate, dbusrinfo);
+	if (!IsStrEmpty(err_msg))
+		SEND_MSG_AND_RETURN(message->Chat->Id, err_msg);
+
+	// выполняем команду
+	std::unique_ptr<StringList> params(ParseFormatString(param));
+	cmd.proc(dbusrinfo, message->From, message->Chat, params.get(), message->Message_Id);
+	return;
+}
+
 void RunProcCmd(const SMAnsiString& cmd, const SMAnsiString& param, TGBOT_Message* message, DB_User& dbusrinfo)
 {
 	// выполняем команду
-	for (size_t i = 0; i < CmdDefNum; i++)
+	for (auto& command : CmdDef)
 	{
-		if (cmd == CmdDef[i].cmd)
-		{
-			// проверяем разрешения
-			if(!CheckUserPermission(CmdDef[i].permission, dbusrinfo, CmdDef[i].and_flag))
-				PERMISSION_DENIED(message->Chat->Id);
-
-			// выполняем команду
-			std::unique_ptr<StringList> params(ParseFormatString(param));
-			CmdDef[i].proc(dbusrinfo, message->From, message->Chat, params.get(), message->Message_Id);
-			return;
-		}
+		if (cmd == command.cmd)
+			return run_cmd(command, dbusrinfo, param, message);
 	}
 	// неизвестная команда
 	sc_processing_unknown(dbusrinfo, message->From, message->Chat, param, message->Message_Id);
@@ -62,7 +94,7 @@ void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat 
 }
 
 void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const StringList* Params, uint64_t MessageID)
-{	
+{
 	// клавиатура, чисто для примера
 	static std::vector<InlineKeyboardDef> kb_start =
 	{
@@ -86,7 +118,6 @@ void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *R
 
 void sc_processing_find(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
 {
-	CHECK_USRSTATE_FREE(dbusrinfo, RecvChat->Id);
 	// уводим поиск в отдельный поток
 	GetFindThread()->StartFind(dbusrinfo.UID);
 }
@@ -127,9 +158,6 @@ void sc_processing_cancel(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* 
 
 void sc_processing_stop(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
 {
-	if (dbusrinfo.State != USRSTATE_CHAT)
-		SEND_MSG_AND_RETURN(RecvChat->Id, BOTMSG_OUTSIDE_CHAT);
-
 	// достаём ID собеседника
 	GET_USRSTATE_PARAMS(dbusrinfo.StateParams, USRSTATE_CHAT_params);
 	uint64_t recepient = gupvalues.at(0);
@@ -315,20 +343,16 @@ void sc_processing_setnotify(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Cha
 	proc_setflag_cmd(dbusrinfo.Notify, helpmsg, Params, RecvChat->Id, dbusrinfo, USRSTATE_SETNOTIFY_INPUT_UID);
 }
 
-void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const SMAnsiString& Message, uint64_t MessageID)
+void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, TGBOT_Message *message)
 {
+	SMAnsiString &Message = message->Text;
+	uint64_t &MessageID = message->Message_Id;
+
 	// обработка нажатия ReplyBtn
 	for (auto &cmd : CmdDef)
 	{
 		if (Message == cmd.replybtn)
-		{
-			// проверяем разрешения
-			if (!CheckUserPermission(cmd.permission, RecvUserInfo, cmd.and_flag))
-				PERMISSION_DENIED(RecvChat->Id);
-
-			cmd.proc(RecvUserInfo, RecvUser, RecvChat, nullptr, MessageID);
-			return;
-		}
+			return run_cmd(cmd, RecvUserInfo, nullptr, message);	
 	}
 
 	// выполнение команды из интерактивного режима

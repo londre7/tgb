@@ -11,10 +11,10 @@
 #define REINTERPRET_CAST_CHARPTR(buf) buf
 #endif
 
-int SockConnect(int &SockFD, SMAnsiString IP, int Port);
-int SockConnectAsync(int &SockFD, SMAnsiString IP, int Port);
-SSL* SockConnectWithSSL(int &SockFD, SMAnsiString IP, int Port, int &Err);
-bool Is_IPv4(SMAnsiString Host);
-SMAnsiString GetIPFromHost(SMAnsiString Host);
+int SockConnect(int &SockFD, const SMAnsiString &IP, int Port);
+int SockConnectAsync(int &SockFD, const SMAnsiString &IP, int Port);
+SSL* SockConnectWithSSL(int &SockFD, const SMAnsiString &IP, int Port, int &Err);
+bool Is_IPv4(const SMAnsiString &Host);
+SMAnsiString GetIPFromHost(const SMAnsiString &Host);
 
 #endif

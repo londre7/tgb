@@ -52,10 +52,10 @@ class SMAnsiString
 		}
 		SMAnsiString(const char *str) 
 		{
-			size_t slen = strlen(str);
+			size_t slen = (str)?strlen(str):0ull;
 			bufferSize = (slen < STR_ALIGNMENT) ? STR_ALIGNMENT : slen + STR_ALIGNMENT;
 			data = new char[bufferSize];
-			memcpy(data, str, slen);
+			if(slen) memcpy(data, str, slen);
 			data[slen] = '\0';
 		}
 		SMAnsiString(char* str, size_t len) // сотрём сами
@@ -206,6 +206,7 @@ class SMAnsiString
 		}
 		static SMAnsiString smprintf(const char* format, ...)
 		{
+			if (!format) return "";
 			size_t bsz = strlen(format) + 16384ull + 1024ull;
 			va_list ap;
 			va_start(ap, format);
@@ -217,13 +218,17 @@ class SMAnsiString
 		}
 		void smprintf_s(const char* format, ...)
 		{
-			size_t bsz = strlen(format) + 16384ull + 1024ull;
-			ReallocateIfNeeded(bsz);
-
-			va_list ap;
-			va_start(ap, format);
-			vsprintf(data, format, ap);
-			va_end(ap);
+			if (format)
+			{
+				size_t bsz = strlen(format) + 16384ull + 1024ull;
+				ReallocateIfNeeded(bsz);
+				va_list ap;
+				va_start(ap, format);
+				vsprintf(data, format, ap);
+				va_end(ap);
+			}
+			else
+				*data = '\0';
 		}
 		bool IsEmpty() const { return (strlen(data) <= 0); }
 		bool IsValidNumber() const 
@@ -247,7 +252,7 @@ class SMAnsiString
 		}
 		SMAnsiString& operator=(const char* str)
 		{
-			size_t slen = strlen(str);
+			size_t slen = (str)?strlen(str):0ull;
 			if (slen)
 			{
 				ReallocateIfNeeded(slen);
@@ -263,19 +268,19 @@ class SMAnsiString
 			return *this;
 		}
 
-		SMAnsiString operator+(const SMAnsiString& Value)
+		SMAnsiString operator+(const SMAnsiString& Value) const
 		{	
 			SMAnsiString ret(data);
 			ret += Value;
 			return ret;
 		}
-		SMAnsiString operator+(const char *Value)
+		SMAnsiString operator+(const char *Value) const
 		{
 			SMAnsiString ret(data);
 			ret += Value;
 			return ret;
 		}
-		SMAnsiString operator+(char Value)
+		SMAnsiString operator+(char Value) const
 		{
 			SMAnsiString ret(data);
 			ret += Value;
@@ -292,11 +297,14 @@ class SMAnsiString
 		}
 		SMAnsiString& operator+=(const char* Value)
 		{
-			size_t dataLen = strlen(data);
-			size_t valLen = strlen(Value);
-			ReallocateIfNeeded(valLen, true);
-			memcpy(&data[strlen(data)], Value, valLen);
-			data[dataLen + valLen] = '\0';
+			if (Value)
+			{
+				size_t dataLen = strlen(data);
+				size_t valLen = strlen(Value);
+				ReallocateIfNeeded(valLen, true);
+				memcpy(&data[strlen(data)], Value, valLen);
+				data[dataLen + valLen] = '\0';
+			}
 			return *this;
 		}
 		SMAnsiString& operator+=(char Value)
@@ -346,7 +354,7 @@ class SMAnsiString
 			return true;
 		}
 
-		bool operator!=(const SMAnsiString& Value)
+		bool operator!=(const SMAnsiString& Value) const
 		{
 			const size_t sl = strlen(data);
 			const char* src = Value.c_str();
@@ -364,7 +372,7 @@ class SMAnsiString
 			// если строки равны, то программа дойдёт до этого места и вернёт false
 			return false;
 		}
-		bool operator!=(const char* Value)
+		bool operator!=(const char* Value) const
 		{
 			if (!Value) return false;
 			const size_t sl = strlen(data);

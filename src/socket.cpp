@@ -1,6 +1,6 @@
 #include "socket.h"
 
-int SockConnect(int &SockFD, SMAnsiString IP, int Port)
+int SockConnect(int &SockFD, const SMAnsiString &IP, int Port)
 {
 	struct sockaddr_in	servaddr;
 	
@@ -12,7 +12,7 @@ int SockConnect(int &SockFD, SMAnsiString IP, int Port)
 	return connect(SockFD, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }
 
-int SockConnectAsync(int &SockFD, SMAnsiString IP, int Port)
+int SockConnectAsync(int &SockFD, const SMAnsiString &IP, int Port)
 {
 	struct sockaddr_in	servaddr;
 	
@@ -30,7 +30,7 @@ int SockConnectAsync(int &SockFD, SMAnsiString IP, int Port)
 	return connect(SockFD, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }
 
-SSL* SockConnectWithSSL(int &SockFD, SMAnsiString IP, int Port, int &Err)
+SSL* SockConnectWithSSL(int &SockFD, const SMAnsiString &IP, int Port, int &Err)
 {
 	SSL *ssl;
 	struct sockaddr_in	servaddr;
@@ -67,87 +67,67 @@ SSL* SockConnectWithSSL(int &SockFD, SMAnsiString IP, int Port, int &Err)
 	return ssl;
 }
 
-bool Is_IPv4(SMAnsiString Host)
+bool Is_IPv4(const SMAnsiString &Host)
 {
-	int		pt_count;
-	char	num[16];
-	int		val;
-	
-	if((Host.length() < 7) || (Host.length() > 15)) return false;
-	
-	pt_count = 0;
-	for(int i=0; i<Host.length(); i++)
+	#define DIGIT \
+		*bppos = l; \
+		++bppos;
+	#define DELIMITER \
+		*bppos = '\0'; \
+		b[cb] = bp; \
+		if ((int(b[cb]) < 0) || (int(b[cb]) > 255)) \
+			return false; \
+		bppos = bp; \
+		++cb; 
+
+	const int hostLen = Host.length();
+	if ((hostLen < 7) || (hostLen > 15)) return false;
+
+	char bp[16];
+	char *bppos = bp;
+	SMAnsiString b[4];
+	size_t cb = 0ull;
+	const int hlen = Host.length();
+	for (int i = 0; i < hlen; i++)
 	{
-		if((((int)Host[i] >= 48) && ((int)Host[i] <= 57)) || (Host[i] == '.')) 
+		char &l = Host[i];
+		if (i == (hlen - 1))
 		{
-			if(Host[i] == '.') 
-			{
-				if(i != 0)
-				{
-					if(Host[i-1] == '.') return false;
-					else pt_count++;
-				}
-				else pt_count++;
-			}
+			DIGIT;
+			DELIMITER;
 		}
-		else return false;
-	}
-	
-	if(pt_count != 3) return false;
-	
-	// смотрим, чтобы числа были от 0 до 255
-	for(int cnt=0, i=0; cnt<4; cnt++)
-	{
-		memset(num, 0, 16);
-		for(int j=0; true; j++)
+		else if (isdigit((int)l))
 		{
-			if(Host[i] != '.')
-			{
-				num[j] = Host[i];
-				i++;
-				if(i >= Host.length())
-				{
-					//num[j] = '\0';
-					val = atoi(num);
-					if(val > 255) return false;
-					else break;
-				}
-			}
-			else
-			{
-				//num[j] = '\0';
-				val = atoi(num);
-				if(val > 255) return false;
-				else 
-				{
-					i++;
-					break;
-				}
-			}
+			// цифра
+			DIGIT;
 		}
+		else if (l == '.')
+		{
+			// разделитель
+			DELIMITER;
+		}
+		else
+			return false;
 	}
-	
+	if (cb != 4) return false;
 	return true;
 }
 
-SMAnsiString GetIPFromHost(SMAnsiString Host)
+SMAnsiString GetIPFromHost(const SMAnsiString &Host)
 {
-	struct hostent	*hostinfo;
-	SMAnsiString	ret;
-	
+	SMAnsiString ret;
 	if(!Is_IPv4(Host))
 	{
-		// пролукчаем IP из DNS
-		hostinfo = gethostbyname(Host.c_str());
+		// получаем IP из DNS
+		struct hostent *hostinfo = gethostbyname(Host.c_str());
 		if(hostinfo == NULL) return "";  // dns not resolved
 		
 		for(int i=0; i<4; i++)
 		{
-			ret = ret + SMAnsiString((int)uint8_t(hostinfo->h_addr_list[0][i]));
-			if(i != 3) ret = ret + ".";
+			if (i) ret += '.';
+			ret += SMAnsiString((int)uint8_t(hostinfo->h_addr_list[0][i]));
 		}
 	}
 	else ret = Host;
-	
 	return ret;
 }

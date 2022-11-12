@@ -782,12 +782,12 @@ class TGBOT_Update
 
 bool tgbot_GetUpdates(std::vector<TGBOT_Update*>& updates, uint64_t offset = 0);
 uint64_t GetChatIDFromUpdate(TGBOT_Update* Upd);
-void tgbot_answerCallbackQuery(SMAnsiString CallbackQueryID);
+void tgbot_answerCallbackQuery(const SMAnsiString &CallbackQueryID);
 TGBOT_User* tgbot_getMe();
 void tgbot_SendMessage(uint64_t ChatID, const SMAnsiString &Text, TGBOT_Keyboard *Keyboard = nullptr);
 void tgbot_SendMessage(SMKeyList* ChatIDList, const SMAnsiString &Text, TGBOT_Keyboard *Keyboard = nullptr);
 void tgbot_forwardMessage(uint64_t ChatID, uint64_t FromChatID, uint64_t MessageID);
-void tgbot_SendPhotoWithUpload(SMAnsiString Filename, uint64_t ChatID, const SMAnsiString& Caption);
+void tgbot_SendPhotoWithUpload(const SMAnsiString &Filename, uint64_t ChatID, const SMAnsiString& Caption);
 void tgbot_SendPhotoByFileId(const SMAnsiString& FileID, uint64_t ChatID, const SMAnsiString& Caption);
 void tgbot_SendDocument(const char* buf, size_t buflen, const SMAnsiString& outFileName, const SMAnsiString& contentType, uint64_t ChatID, const SMAnsiString& Caption);
 void tgbot_editMessageText(uint64_t chat_id, uint64_t message_id, const SMAnsiString& text, TGBOT_InlineKeyboardMarkup* keyboard=nullptr);

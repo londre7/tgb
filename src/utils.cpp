@@ -189,33 +189,23 @@ void AppendStringToLog(SMAnsiString filename, const SMAnsiString& Message)
 
 StringList* LoadTextFromFile(SMAnsiString FileName)
 {
-	StringList    *text;        // текст, который будем возвращать
-	std::ifstream file;         // файл, откуда читаем
-	unsigned int  file_size;    // размер файла в байтах
-	struct stat   st;           // структура для получения размера файла
-	char          *fbuffer;     // буфер, куда читаем
-	char          letter;       // буква
-	int           size_of_char; // размер типа char
-	int           write_pos;    // позиция в буфере, куда запишем считанный символ
-
-	// начальные значения
-	text = nullptr;
-	fbuffer = nullptr;
-	
 	// размер файла
+	struct stat st;
 	stat(C_STR(FileName), &st);
-	file_size = st.st_size;
+	off_t file_size = st.st_size;
 	
 	// открываем файл
+	std::ifstream file;
 	file.open(C_STR(FileName), std::ios::binary);
 	if(!file.is_open()) return NULL;
 	
-	text = new StringList;
+	StringList *text = new StringList;
 	if(file_size == 0) return text;
 	
-	fbuffer = new char[file_size];
-	size_of_char = sizeof(letter);
-	write_pos = 0;
+	char *fbuffer = new char[file_size];
+	char letter;
+	size_t size_of_char = sizeof(letter);
+	size_t write_pos = 0;
 	for(int i=0; i<file_size; i++)
 	{
 		file.read(reinterpret_cast<char*>(&letter), size_of_char);
@@ -224,10 +214,7 @@ StringList* LoadTextFromFile(SMAnsiString FileName)
 			if (letter != '\r')
 			{
 				if (i != (file_size - 1))
-				{
-					fbuffer[write_pos] = letter;
-					write_pos++;
-				}
+					fbuffer[write_pos++] = letter;
 				else
 				{
 					fbuffer[write_pos] = '\0';
@@ -244,49 +231,36 @@ StringList* LoadTextFromFile(SMAnsiString FileName)
 		}
 	}
 	
-	try { delete[] fbuffer; } catch(...) { ; }
-	
+	DELETE_ARRAY_OBJECT(fbuffer);
 	return text;
 }
 
 bool LoadTextFromFile_v2(SMAnsiString FileName, StringList *Output)
 {
-	std::ifstream file;         // файл, откуда читаем
-	unsigned int  file_size;    // размер файла в байтах
-	struct stat   st;           // структура для получения размера файла
-	char          *fbuffer;     // буфер, куда читаем
-	char          letter;       // буква
-	int           size_of_char; // размер типа char
-	int           write_pos;    // позиция в буфере, куда запишем считанный символ
-
-	// начальные значения
-	fbuffer = nullptr;
-	
 	Output->clear();
 	
 	// размер файла
+	struct stat   st;
 	stat(C_STR(FileName), &st);
-	file_size = st.st_size;
+	off_t file_size = st.st_size;
 	
 	// открываем файл
+	std::ifstream file;
 	file.open(C_STR(FileName), std::ios::binary);
 	if(!file.is_open()) return false;
-	
 	if(file_size == 0) return true;
 	
-	fbuffer = new char[file_size];
-	size_of_char = sizeof(letter);
-	write_pos = 0;
-	for(int i=0; i<file_size; i++)
+	char *fbuffer = new char[file_size];
+	char letter;
+	size_t size_of_char = sizeof(letter);
+	size_t write_pos = 0;
+	for(off_t i=0; i<file_size; i++)
 	{
 		file.read(reinterpret_cast<char*>(&letter), size_of_char);
 		if(letter != '\n') 
 		{
 			if(i != (file_size-1))
-			{
-				fbuffer[write_pos] = letter;
-				write_pos++;
-			}
+				fbuffer[write_pos++] = letter;
 			else
 			{
 				fbuffer[write_pos] = '\0';
@@ -302,7 +276,6 @@ bool LoadTextFromFile_v2(SMAnsiString FileName, StringList *Output)
 	}
 	
 	DELETE_ARRAY_OBJECT(fbuffer);
-	
 	return true;
 }
 
@@ -310,11 +283,11 @@ SMAnsiString TimeDifferenceString(time_t Time1, time_t Time2)
 {
 	time_t	Difference = Time1 - Time2;
 
-	if(Difference < 60) return SMAnsiString(Difference) + SMAnsiString(" сек.");
-	if(Difference < 3600) return SMAnsiString(Difference/60) + SMAnsiString(" мин.");
-	if(Difference < 86400) return SMAnsiString(Difference/3600) + SMAnsiString(" ч.");
-    if(Difference < 2592000) return SMAnsiString(Difference/86400) + SMAnsiString(" дн.");
-	else return SMAnsiString(Difference / 86400) + SMAnsiString(" дн.");
+	if(Difference < 60) return SMAnsiString(Difference) + " сек.";
+	if(Difference < 3600) return SMAnsiString(Difference/60) + " мин.";
+	if(Difference < 86400) return SMAnsiString(Difference/3600) + " ч.";
+    if(Difference < 2592000) return SMAnsiString(Difference/86400) + " дн.";
+	else return SMAnsiString(Difference/86400) + " дн.";
 }
 
 void Hexlify(char* hex, const unsigned char* bin, int len)
@@ -380,11 +353,11 @@ int DayOfWeekCovert(int Src)
 {
 	switch (Src)
 	{
-	case 0:
-	{
-		return 6;
-	}
-	default: return Src - 1;
+		case 0:
+		{
+			return 6;
+		}
+		default: return Src - 1;
 	}
 }
 // определить день недели даты DD.MM.YYYY

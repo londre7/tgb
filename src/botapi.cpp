@@ -97,70 +97,56 @@ TGBOT_InlineKeyboardMarkup::TGBOT_InlineKeyboardMarkup(const TGBOT_InlineKeyboar
 
 SMAnsiString TGBOT_ReplyKeyboardMarkup::ToJSON()
 {
-	SMAnsiString	ret;
-	SMAnsiString	resize_keyboard,
-		one_time_keyboard,
-		selective;
+	SMAnsiString resize_keyboard(this->ResizeKeyboard),
+	             one_time_keyboard(this->OneTimeKeyboard),
+	             selective(this->Selective);
 
-	if (this->ResizeKeyboard) resize_keyboard = "true";
-	else resize_keyboard = "false";
-	if (this->OneTimeKeyboard) one_time_keyboard = "true";
-	else one_time_keyboard = "false";
-	if (this->Selective) selective = "true";
-	else selective = "false";
-
-	ret = "{\"keyboard\":[";
+	SMAnsiString ret("{\"keyboard\":[");
 	for (int i = 0; i <= this->CurrentRow; i++)
 	{
-		if (this->NumButtons[i] == 0) return "";
-
-		ret = ret + SMAnsiString("[");
+		if (this->NumButtons[i] == 0) break;
+		if(i) ret += ",";
+		ret += "[";
 		for (int j = 0; j < this->NumButtons[i]; j++)
 		{
-			ret = ret + SMAnsiString("{\"text\":\"") + this->Buttons[i][j]->Text + SMAnsiString("\"}");
-			if (j != this->NumButtons[i] - 1) ret = ret + ",";
+			if (j) ret += ",";
+			ret += SMAnsiString::smprintf("{\"text\":\"%s\"}", C_STR(this->Buttons[i][j]->Text));
 		}
-		ret = ret + SMAnsiString("]");
-		if (i != this->CurrentRow) ret = ret + ",";
+		ret += "]";
 	}
-	ret = ret + SMAnsiString("],\"resize_keyboard\":") + resize_keyboard + SMAnsiString(",\"one_time_keyboard\":") + one_time_keyboard + SMAnsiString(",\"selective\":") + selective + SMAnsiString("}");
-
+	ret += SMAnsiString::smprintf("],\"resize_keyboard\":%s,\"one_time_keyboard\":%s,\"selective\":%s}", C_STR(resize_keyboard), C_STR(one_time_keyboard), C_STR(selective));
 	return ret;
 }
 
 SMAnsiString TGBOT_InlineKeyboardMarkup::ToJSON()
 {
-	SMAnsiString	ret;
-
-	ret = "{\"inline_keyboard\":[";
+	SMAnsiString ret("{\"inline_keyboard\":[");
 	for (int i = 0; i <= this->CurrentRow; i++)
 	{
-		if (this->NumButtons[i] == 0) return "";
-
-		ret = ret + SMAnsiString("[");
+		if (this->NumButtons[i] == 0) break;
+		if (i) ret += ",";
+		ret += "[";
 		for (int j = 0; j < this->NumButtons[i]; j++)
 		{
-			ret = ret + this->Buttons[i][j]->ToJSON();
-			if (j != this->NumButtons[i] - 1) ret = ret + ",";
+			if (j) ret += ",";
+			ret += this->Buttons[i][j]->ToJSON();
 		}
-		ret = ret + SMAnsiString("]");
-		if (i != this->CurrentRow) ret = ret + ",";
+		ret += "]";
 	}
-	ret = ret + SMAnsiString("]}");
-
+	ret += "]}";
 	return ret;
 }
 
-void tgbot_answerCallbackQuery(SMAnsiString CallbackQueryID)
+void tgbot_answerCallbackQuery(const SMAnsiString &CallbackQueryID)
 {
-	int 						err;
-	SMAnsiString				get_doc,
-		content;
+	int          err;
+	SMAnsiString get_doc,
+	             content;
 
 	// отправляем сообщение
 	BotConfStruct* bot_conf = GetBotConf();
 	get_doc.smprintf_s("/bot%s/answerCallbackQuery", C_STR(bot_conf->GetParam(BotConfStruct::Token)));
-	content = SMAnsiString("{\"callback_query_id\":\"") + CallbackQueryID + SMAnsiString("\"}");
+	content.smprintf_s("{\"callback_query_id\":\"%s\"}", C_STR(CallbackQueryID));
 	std::unique_ptr<HTTP_Response> http_resp(HTTP_Post(bot_conf->GetParam(BotConfStruct::TelegramHost), bot_conf->GetIntParam(BotConfStruct::TelegramPort), bool(bot_conf->GetIntParam(BotConfStruct::UseSSL)), bot_conf->GetParam(BotConfStruct::TelegramHost), get_doc, "application/json\0", (void*)C_STR(content), content.length(), err));
 }
 
@@ -244,60 +230,57 @@ void tgbot_forwardMessage(uint64_t ChatID, uint64_t FromChatID, uint64_t Message
 	std::unique_ptr<HTTP_Response> response(tgbot_method("forwardMessage", content));
 }
 
-void tgbot_SendPhotoWithUpload(SMAnsiString Filename, uint64_t ChatID, const SMAnsiString & Caption)
+void tgbot_SendPhotoWithUpload(const SMAnsiString &Filename, uint64_t ChatID, const SMAnsiString & Caption)
 {
-	unsigned int	file_size;		// размер файла
-	struct stat 	st;
-	SMAnsiString	part;
-	SMAnsiString	part_delimiter;
-	char* filebuf;
-	std::ifstream	is;
-	int 			err;
-	SMAnsiString	get_doc,
-		content;
-
-	BotConfStruct* bot_conf = GetBotConf();
-	part_delimiter = "6496723c";
+	BotConfStruct *bot_conf = GetBotConf();
 
 	// размер файла
+	struct stat st;
 	stat(C_STR(Filename), &st);
-	file_size = st.st_size;
+	off_t file_size = st.st_size;
 
 	// считываем файл
-	filebuf = new char[file_size];
+	char *filebuf = new char[file_size];
+	std::ifstream is;
 	is.open(C_STR(Filename), std::ios::binary);
 	is.read(reinterpret_cast<char*>(filebuf), file_size);
 	is.close();
 
 	SMOutBuffer send_content(file_size+1024);
 
-	get_doc = SMAnsiString("/bot") + bot_conf->GetParam(BotConfStruct::Token) + SMAnsiString("/sendPhoto");
-
-	content = SMAnsiString("--") + part_delimiter + SMAnsiString("\r\n");
-	content = content + SMAnsiString("Content-Disposition: form-data; name=\"chat_id\"\r\n");
-	content = content + SMAnsiString("\r\n");
-	content = content + SMAnsiString(ChatID);
-	content = content + SMAnsiString("\r\n");
-
-	content = content + SMAnsiString("--") + part_delimiter + SMAnsiString("\r\n");
-	content = content + SMAnsiString("Content-Disposition: form-data; name=\"photo\"; filename=\"ph.jpg\"\r\n");
-	content = content + SMAnsiString("Content-Type: image/jpeg\r\n");
-	content = content + SMAnsiString("Content-Transfer-Encoding: binary\r\n");
-	content = content + SMAnsiString("\r\n");
-
+	const char *part_delimiter = "6496723c";
+	SMAnsiString get_doc(SMAnsiString::smprintf("/bot%s/sendPhoto", C_STR(bot_conf->GetParam(BotConfStruct::Token))));
+	SMAnsiString content;
+	content.smprintf_s
+	(
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"chat_id\"\r\n"
+		"\r\n%llu\r\n"
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"photo\"; filename=\"ph.jpg\"\r\n"
+		"Content-Type: image/jpeg\r\n"
+		"Content-Transfer-Encoding: binary\r\n"
+		"\r\n",
+		part_delimiter,
+		ChatID,
+		part_delimiter
+	);
 	send_content.PutBlock(C_STR(content), content.length());
 	send_content.PutBlock(filebuf, file_size);
-	content = SMAnsiString("\r\n");
-
-	content += SMAnsiString("--") + part_delimiter + SMAnsiString("\r\n");
-	content = content + SMAnsiString("Content-Disposition: form-data; name=\"caption\"\r\n");
-	content = content + SMAnsiString("\r\n");
-	content = content + Caption;
-	content = content + SMAnsiString("\r\n");
-
-	content = content + SMAnsiString("--") + part_delimiter + SMAnsiString("--\r\n\0");
+	content.smprintf_s
+	(
+		"\r\n"
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"caption\"\r\n"
+		"\r\n%s\r\n"
+		"--%s--\r\n\0",
+		part_delimiter,
+		C_STR(Caption),
+		part_delimiter
+	);
 	send_content.PutBlock(C_STR(content), content.length());
 
+	int err;
 	std::unique_ptr<HTTP_Response> http_resp(HTTP_Post(bot_conf->GetParam(BotConfStruct::TelegramHost), bot_conf->GetIntParam(BotConfStruct::TelegramPort), bool(bot_conf->GetIntParam(BotConfStruct::UseSSL)), bot_conf->GetParam(BotConfStruct::TelegramHost), get_doc, "multipart/form-data; boundary=6496723c\0", (void*)send_content.GetBufferPtr(), send_content.GetWritePos() + 1, err));
 	DELETE_ARRAY_OBJECT(filebuf);
 }

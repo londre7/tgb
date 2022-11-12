@@ -1,21 +1,8 @@
 #include "smmysql.h"
 
-bool sm_mysql_query(MYSQL* Connection, SMAnsiString Query)
+MYSQL_RES* sm_mysql_query_v2(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query)
 {
-	if (mysql_query(Connection, C_STR(Query)))
-		return false;
-	if (mysql_field_count(Connection) == 0)
-		return false;
-
-	return true;
-}
-
-MYSQL_RES* sm_mysql_query_v2(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString & Query)
-{
-	MYSQL* conn;
-	MYSQL_RES* ret;
-
-	conn = mysql_init(NULL);
+	MYSQL *conn = mysql_init(NULL);
 	if (!mysql_real_connect(conn, C_STR(Host), C_STR(DBUser), C_STR(DBPassword), C_STR(DBName), 0, NULL, 0))
 		return NULL;
 
@@ -24,23 +11,20 @@ MYSQL_RES* sm_mysql_query_v2(SMAnsiString Host, SMAnsiString DBUser, SMAnsiStrin
 	if (mysql_field_count(conn) == 0)
 		return NULL;
 
-	ret = mysql_store_result(conn);
-
+	MYSQL_RES *ret = mysql_store_result(conn);
 	mysql_close(conn);
 	return ret;
 }
 
-SMMYSQL_Table* sm_mysql_query_v3(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString & Query)
+SMMYSQL_Table* sm_mysql_query_v3(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query)
 {
-	MYSQL_RES* res;
-	MYSQL_ROW			row;
-	SMMYSQL_Table* table = nullptr;
+	MYSQL_RES *res = sm_mysql_query_v2(Host, DBUser, DBPassword, DBName, Query); // Host, DBUser, DBPassword, DBName, Query
+	if (res == nullptr) return nullptr;
 
-	res = sm_mysql_query_v2(Host, DBUser, DBPassword, DBName, Query); // Host, DBUser, DBPassword, DBName, Query
-	if (res == NULL) return NULL;
-
+	SMMYSQL_Table *table = nullptr;
 	if (mysql_num_rows(res) > 0)
 	{
+		MYSQL_ROW row;
 		table = new SMMYSQL_Table(mysql_num_rows(res), mysql_num_fields(res));
 		for (size_t i = 0; row = mysql_fetch_row(res); i++)
 		{
@@ -52,20 +36,15 @@ SMMYSQL_Table* sm_mysql_query_v3(SMAnsiString Host, SMAnsiString DBUser, SMAnsiS
 		}
 	}
 	else
-	{
 		table = new SMMYSQL_Table;
-	}
 
 	mysql_free_result(res);
 	return table;
 }
 
-bool sm_mysql_query_insert(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString & Query)
+bool sm_mysql_query_insert(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString &Query)
 {
-	MYSQL* conn;
-	MYSQL_RES* ret;
-
-	conn = mysql_init(NULL);
+	MYSQL *conn = mysql_init(NULL);
 	if (mysql_real_connect(conn, C_STR(Host), C_STR(DBUser), C_STR(DBPassword), C_STR(DBName), 0, NULL, 0) == NULL)
 		return false;
 
@@ -75,7 +54,7 @@ bool sm_mysql_query_insert(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString 
 		return false;
 	}
 
-	ret = mysql_store_result(conn);
+	MYSQL_RES *ret = mysql_store_result(conn);
 	if (ret == nullptr)
 	{
 		unsigned int err = mysql_errno(conn);
@@ -93,13 +72,9 @@ bool sm_mysql_query_insert(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString 
 	}
 }
 
-uint64_t sm_mysql_query_insert_ret_id(SMAnsiString Host, SMAnsiString DBUser, SMAnsiString DBPassword, SMAnsiString DBName, const SMAnsiString& Query)
+uint64_t sm_mysql_query_insert_ret_id(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const SMAnsiString& Query)
 {
-	MYSQL* conn;
-	MYSQL_RES* ret;
-	uint64_t id=0ULL;
-
-	conn = mysql_init(NULL);
+	MYSQL *conn = mysql_init(NULL);
 	if (mysql_real_connect(conn, Host, DBUser, DBPassword, DBName, 0, NULL, 0) == NULL)
 		return false;
 
@@ -108,7 +83,7 @@ uint64_t sm_mysql_query_insert_ret_id(SMAnsiString Host, SMAnsiString DBUser, SM
 		mysql_close(conn);
 		return false;
 	}
-	ret = mysql_store_result(conn);
+	MYSQL_RES *ret = mysql_store_result(conn);
 	if (ret == nullptr)
 	{
 		unsigned int err = mysql_errno(conn);
@@ -132,6 +107,7 @@ uint64_t sm_mysql_query_insert_ret_id(SMAnsiString Host, SMAnsiString DBUser, SM
 		mysql_close(conn);
 		return false;
 	}
+	uint64_t id = 0ull;
 	if (mysql_num_rows(ret) > 0)
 	{
 		MYSQL_ROW row;

@@ -147,7 +147,7 @@ void CreateUpdateThreads(int numthr)
 	}
 }
 
-bool PushToUpdQueue(TGBOT_Update* upd)
+bool PushToUpdQueue(TGBOT_Update *upd)
 {
 	if (!upd) return false;
 
@@ -376,7 +376,7 @@ void* UpdThreadFunc(void *arg)
 					if(recv_cmd[0] != '/')
 					{
 						// не команда
-						fm_processing(u_recv, message->From, message->Chat, recv_cmd, message->Message_Id);
+						fm_processing(u_recv, message->From, message->Chat, message);
 					}
 					else
 					{
