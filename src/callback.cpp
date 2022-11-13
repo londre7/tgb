@@ -13,7 +13,6 @@ CallbackDef[] =
 	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        NULL                     },
 	{ CALLBACK_ABOUT,                 cq_processing_about,                 &CallbackParamsDef_About },
 };
-const size_t CallbackDefNum = SizeOfArray(CallbackDef);
 
 // параметры для callback'ов
 StringList CallbackParamsDef_About =
@@ -23,9 +22,9 @@ StringList CallbackParamsDef_About =
 
 static SMAnsiString GenerateCallbackID()
 {
-	static char					prev_callback_hash[33];
-	char						callback_hash[33];
-	unsigned char				callback_hash_bin[32];
+	static char   prev_callback_hash[33];
+	char          callback_hash[33];
+	unsigned char callback_hash_bin[32];
 
 	// гегенируем callback
 	memset(callback_hash, 0, 32);
@@ -113,9 +112,9 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, const DB_User &dbusrinfo
 	SMAnsiString callback_params = "{}";
 
 	bool is_valid_callbacktype = false;
-	for (size_t i = 0; i < CallbackDefNum; i++)
+	for(auto &callback: CallbackDef)
 	{
-		if (callback_type == CallbackDef[i].token)
+		if (callback_type == callback.token)
 		{
 			// лезем в БД за параметрами callback
 			std::unique_ptr<SMMYSQL_Table> CallbackTbl
@@ -142,11 +141,11 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, const DB_User &dbusrinfo
 			{
 				// готовим параметры
 				StringList param_values; 
-				if(CallbackDef[i].paramDef)
-					ParamsFromJSON(callback_params, *CallbackDef[i].paramDef, param_values);
+				if(callback.paramDef)
+					ParamsFromJSON(callback_params, *callback.paramDef, param_values);
 
 				// запускаем обработчик
-				CallbackDef[i].proc(dbusrinfo, RecvCallback->From, RecvCallback->Message, GetPressedBtnCaption(RecvCallback), param_values);
+				callback.proc(dbusrinfo, RecvCallback->From, RecvCallback->Message, GetPressedBtnCaption(RecvCallback), param_values);
 
 				// ставим, что обработали
 				if (CallbackTbl && (CallbackTbl->Rows == 1))

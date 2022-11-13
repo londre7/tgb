@@ -2,45 +2,42 @@
 
 bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 {
-	int							assign_pos;
-	SMAnsiString   					key;
-	SMAnsiString   					value;
-	size_t							file_count;
-
 	// считываем из файла
-	std::unique_ptr< StringList> file(LoadTextFromFile(FileName));
+	std::unique_ptr<StringList> file(LoadTextFromFile(FileName));
 	if (file == NULL) return false;
 	if (!file->size())
 	{
 		return false;
 	}
 
-	file_count = file->size();
-
+	SMAnsiString key;
+	SMAnsiString value;
+	int assign_pos;
+	const size_t file_count = file->size();
 	for (size_t i = 0; i < file_count; i++)
 	{
-		if (file->operator[](i).length() == 2)
+		if (file->at(i).length() == 2)
 		{
-			if ((file->operator[](i)[0] != '/') && (file->operator[](i)[1] != '/'))
+			if ((file->at(i)[0] != '/') && (file->at(i)[1] != '/'))
 			{
 				file->clear();
 				return false;
 			}
 		}
-		else if (file->operator[](i).length() > 2)
+		else if (file->at(i).length() > 2)
 		{
-			if ((file->operator[](i)[0] != L'/') && (file->operator[](i)[1] != L'/'))
+			if ((file->at(i)[0] != L'/') && (file->at(i)[1] != L'/'))
 			{
-				assign_pos = file->operator[](i).Pos('=');
+				assign_pos = file->at(i).Pos('=');
 				if (assign_pos == -1)
 				{
 					file->clear();
 					return false;
 				}
 
-				key = file->operator[](i);
+				key = file->at(i);
 				key = key.Delete(assign_pos, key.length());
-				value = file->operator[](i);
+				value = file->at(i);
 				value = value.Delete(0, assign_pos + 1);
 
 				if (!key.length())
@@ -57,7 +54,7 @@ bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 				ConfStruct->SetParam(key, value);
 			}
 		}
-		else if (file->operator[](i).length() == 1)
+		else if (file->at(i).length() == 1)
 		{
 			file->clear();
 			return false;

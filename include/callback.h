@@ -7,8 +7,6 @@
 #define CALLBACK_PRIVATE_POLICY        "private_policy"
 #define CALLBACK_ABOUT                 "about"
 
-struct CallbackParam { SMAnsiString key, value; };
-
 // параметры для callback'ов
 extern StringList CallbackParamsDef_About;
 

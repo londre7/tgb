@@ -216,7 +216,7 @@ static void proc_setflag_cmd(uint64_t &flag, const SMAnsiString& helpmsg, const 
 	uint64_t chatId, DB_User& dbusrinfo, int to_state)
 {
 	// проверяем количество параметров
-	const size_t numparam = Params ? Params->size() : 0;
+	const size_t numparam = Params ? Params->size() : 0ull;
 	if (!numparam)
 	{
 		// переводим в интерактивный режим
@@ -302,7 +302,7 @@ void sc_processing_getuserinfo(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_C
 	}
 
 	// проверяем количество параметров
-	const size_t numparam = Params ? Params->size() : 0;
+	const size_t numparam = Params ? Params->size() : 0ull;
 	if (!numparam)
 	{
 		// переводим в интерактивный режим

@@ -58,6 +58,14 @@ class SMAnsiString
 			if(slen) memcpy(data, str, slen);
 			data[slen] = '\0';
 		}
+		SMAnsiString(const char* str, size_t len, int dummy)
+		{
+			size_t slen = (str) ? len : 0ull;
+			bufferSize = (slen < STR_ALIGNMENT) ? STR_ALIGNMENT : slen + STR_ALIGNMENT;
+			data = new char[bufferSize];
+			if (slen) memcpy(data, str, slen);
+			data[slen] = '\0';
+		}
 		SMAnsiString(char* str, size_t len) // сотрём сами
 		{
 			data = str;
