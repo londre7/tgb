@@ -56,7 +56,7 @@ size_t GetNumChatsForUser(uint64_t uid, time_t _from, time_t _to)
 	if (!uid) return 0ull;
 	if (_from && _to && (_from > _to)) return 0ull;
 
-	SMAnsiString query = SMAnsiString::smprintf("SELECT COUNT(1) FROM tgb_chats WHERE (uid1=%llu OR uid2=%llu)", uid, uid);
+	SMAnsiString query = std::move(SMAnsiString::smprintf("SELECT COUNT(1) FROM tgb_chats WHERE (uid1=%llu OR uid2=%llu)", uid, uid));
 	if (_from || _to) query += " AND (";
 	if (_from) query += SMAnsiString::smprintf("start_time>=%d", (int)_from);
 	if (_from && _to) query += " AND ";

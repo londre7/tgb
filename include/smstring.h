@@ -271,6 +271,7 @@ class SMAnsiString
 		}
 		SMAnsiString& operator=(SMAnsiString&& rvalue)
 		{
+			delete[] data;
 			data = rvalue.data;
 			bufferSize = rvalue.bufferSize;
 			rvalue.data = nullptr;

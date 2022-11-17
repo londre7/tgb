@@ -2,32 +2,31 @@
 
 static SMAnsiString MakeFullUserName(const SMAnsiString& lastname, const SMAnsiString& firstname, const SMAnsiString &username)
 {
-	//return lastname + SMAnsiString((!lastname.IsEmpty()) ? " " : "") + firstname + SMAnsiString((!username.IsEmpty())?SMAnsiString::smprintf(" (%s)", C_STR(MakeUsername(username))):"");
 	SMAnsiString fn;
 	if (!lastname.IsEmpty()) fn += (lastname + " ");
 	fn += firstname;
 	if (!username.IsEmpty()) fn += SMAnsiString::smprintf(" (%s)", C_STR(username));
-	return fn;
+	return std::move(fn);
 }
 
 SMAnsiString MakeFullUserName(const TGBOT_User* user, bool useUsername)
 {
-	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
+	return std::move(MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:""));
 }
 
 SMAnsiString MakeFullUserName(const DB_User* user, bool useUsername)
 {
-	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
+	return std::move(MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:""));
 }
 
 SMAnsiString MakeUsername(const SMAnsiString& username)
 {
-	return (!username.IsEmpty())?SMAnsiString::smprintf("@%s", C_STR(username)):"";
+	return std::move((!username.IsEmpty()) ? SMAnsiString::smprintf("@%s", C_STR(username)) : SMAnsiString(""));
 }
 
 SMAnsiString GetMonthStr(int month)
 {
-	static StringList months =
+	static const std::vector<const char*> months =
 	{
 		"Январь",
 		"Февраль",
@@ -42,11 +41,11 @@ SMAnsiString GetMonthStr(int month)
 		"Ноябрь",
 		"Декабрь"
 	};
-	return months.at(month-1);
+	return std::move(SMAnsiString(months.at(month-1)));
 }
 SMAnsiString GetDayWeekStr(int dw)
 {
-	static StringList dws =
+	static const std::vector<const char*> dws =
 	{
 		"Пн",
 		"Вт",
@@ -56,7 +55,7 @@ SMAnsiString GetDayWeekStr(int dw)
 		"Сб",
 		"Вс"
 	};
-	return dws.at(dw);
+	return std::move(SMAnsiString(dws.at(dw)));
 }
 
 void ShowMessage(bool SrcIsEmpty, uint64_t ChatID, uint64_t MessageID, const SMAnsiString& Text, TGBOT_InlineKeyboardMarkup* Keyboard)
@@ -86,7 +85,7 @@ TGBOT_InlineKeyboardMarkup* MakeInlineKeyboardFromDef(std::vector<InlineKeyboard
 	for (size_t i = 0, ri = 0; i < numbuttons; i++)
 	{
 		if (strcmp(keyboardDef.at(i).caption,"#newrow")==0) { kb->CreateRow(); continue; }
-		callbackData.push_back(MakeCallbackData(keyboardDef.at(i).callback));
+		callbackData.push_back(std::move(MakeCallbackData(keyboardDef.at(i).callback)));
 		pnames.push_back(keyboardDef.at(i).params);
 		kb->CreateButton(keyboardDef.at(i).caption, callbackData.at(ri++), false);
 	}

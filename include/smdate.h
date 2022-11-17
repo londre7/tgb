@@ -55,86 +55,101 @@ class SMDateTime	// äàòà è âğåìÿ
 		SMAnsiString DateTimeString(char date_delim='.', char time_delim=':', char sp_delim=' ') const
 		{
 			tm *curtime = localtime(&_LowLevelTime);
-			return SMAnsiString::smprintf
+			return std::move
 			(
-				DATESTRING "%c" TIMESTRING,
-				curtime->tm_mday,
-				date_delim,
-				curtime->tm_mon + 1,
-				date_delim,
-				curtime->tm_year + 1900,
-				sp_delim,
-				curtime->tm_hour,
-				time_delim,
-				curtime->tm_min,
-				time_delim,
-				curtime->tm_sec
+				SMAnsiString::smprintf
+				(
+					DATESTRING "%c" TIMESTRING,
+					curtime->tm_mday,
+					date_delim,
+					curtime->tm_mon + 1,
+					date_delim,
+					curtime->tm_year + 1900,
+					sp_delim,
+					curtime->tm_hour,
+					time_delim,
+					curtime->tm_min,
+					time_delim,
+					curtime->tm_sec
+				)
 			);
 		}
 		//- âğåìÿ â ôîğìàòå ñòğîêè ÄÄ_ÌÌ_ÃÃÃÃ_××_ÌÌ_ÑÑ
 		SMAnsiString DateTimeSpString() const
 		{
-			return DateTimeString('_', '_', '_');
+			return std::move(DateTimeString('_', '_', '_'));
 		}
 		//- GMT 0 âğåìÿ â ôîğìàòå ñòğîêè ÄÄ.ÌÌ.ÃÃÃÃ ××:ÌÌ::ÑÑ
 		SMAnsiString GMDateTimeString(char date_delim = '.', char time_delim = ':', char sp_delim = ' ') const
 		{
 			tm* curtime = gmtime(&_LowLevelTime);
-			return SMAnsiString::smprintf
+			return std::move
 			(
-				DATESTRING "%c" TIMESTRING,
-				curtime->tm_mday,
-				date_delim,
-				curtime->tm_mon + 1,
-				date_delim,
-				curtime->tm_year + 1900,
-				sp_delim,
-				curtime->tm_hour,
-				time_delim,
-				curtime->tm_min,
-				time_delim,
-				curtime->tm_sec
+				SMAnsiString::smprintf
+				(
+					DATESTRING "%c" TIMESTRING,
+					curtime->tm_mday,
+					date_delim,
+					curtime->tm_mon + 1,
+					date_delim,
+					curtime->tm_year + 1900,
+					sp_delim,
+					curtime->tm_hour,
+					time_delim,
+					curtime->tm_min,
+					time_delim,
+					curtime->tm_sec
+				)
 			);
 		}
 		//- ëîêàëüíîå âğåìÿ â ôîğìàòå ××:ÌÌ::ÑÑ
 		SMAnsiString TimeString(char delim=':') const
 		{
 			tm* curtime = localtime(&_LowLevelTime);
-			return SMAnsiString::smprintf
+			return std::move
 			(
-				TIMESTRING,
-				curtime->tm_hour,
-				delim,
-				curtime->tm_min,
-				delim,
-				curtime->tm_sec
+				SMAnsiString::smprintf
+				(
+					TIMESTRING,
+					curtime->tm_hour,
+					delim,
+					curtime->tm_min,
+					delim,
+					curtime->tm_sec
+				)
 			);
 		}
 		//- GMT0 âğåìÿ â ôîğìàòå ××:ÌÌ::ÑÑ
 		SMAnsiString GMTimeString(char delim=':') const
 		{
 			tm* curtime = gmtime(&_LowLevelTime);
-			return SMAnsiString::smprintf
+			return std::move
 			(
-				TIMESTRING,
-				curtime->tm_hour,
-				delim,
-				curtime->tm_min,
-				delim,
-				curtime->tm_sec
+				SMAnsiString::smprintf
+				(
+					TIMESTRING,
+					curtime->tm_hour,
+					delim,
+					curtime->tm_min,
+					delim,
+					curtime->tm_sec
+				)
 			);
 		}
 		SMAnsiString DateString(char delim='.') const
 		{
 			tm* curtime = localtime(&_LowLevelTime);
-			return SMAnsiString::smprintf
+			return std::move
 			(
-				DATESTRING,
-				curtime->tm_mday,
-				delim,
-				curtime->tm_mon + 1,
-				delim,
-				curtime->tm_year + 1900
+				SMAnsiString::smprintf
+				(
+					DATESTRING,
+					curtime->tm_mday,
+					delim,
+					curtime->tm_mon + 1,
+					delim,
+					curtime->tm_year + 1900
+				)
 			);
 		}
 };

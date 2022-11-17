@@ -47,24 +47,27 @@ DB_User::DB_User(const DB_User &Itm)
 
 SMAnsiString DB_User::InfoStr() const
 {
-	return SMAnsiString::smprintf
+	return std::move
 	(
-		"<b>ID:</b> %llu\n"
-		"<b>Username:</b> %s\n"
-		"<b>Фамилия:</b> %s\n"
-		"<b>Имя:</b> %s\n"
-		"<b>Язык:</b> %s\n"
-		"<b>Номер телефона:</b> %s\n"
-		"<b>Права доступа:</b> недосутпно\n"
-		"<b>Уведомления:</b> недосутпно\n"
-		"<b>Последняя активность:</b> %s",
-		this->UID,
-		C_STR(MakeUsername(this->Username)),
-		C_STR(this->LastName),
-		C_STR(this->FirstName),
-		C_STR(this->LanguageCode),
-		C_STR(this->PhoneNumber),
-		C_STR(SMDateTime(this->LastMessage).DateTimeString())
+		SMAnsiString::smprintf
+		(
+			"<b>ID:</b> %llu\n"
+			"<b>Username:</b> %s\n"
+			"<b>Фамилия:</b> %s\n"
+			"<b>Имя:</b> %s\n"
+			"<b>Язык:</b> %s\n"
+			"<b>Номер телефона:</b> %s\n"
+			"<b>Права доступа:</b> недосутпно\n"
+			"<b>Уведомления:</b> недосутпно\n"
+			"<b>Последняя активность:</b> %s",
+			this->UID,
+			C_STR(MakeUsername(this->Username)),
+			C_STR(this->LastName),
+			C_STR(this->FirstName),
+			C_STR(this->LanguageCode),
+			C_STR(this->PhoneNumber),
+			C_STR(SMDateTime(this->LastMessage).DateTimeString())
+		)
 	);
 }
 
