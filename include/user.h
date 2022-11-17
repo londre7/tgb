@@ -25,7 +25,7 @@
 #define FLAGS_0_1 PERMISSION_MANAGE_USR_ACCESS|PERMISSION_USR_INFO
 
 // уведомления
-#define NOTIFY_REGISTER_NEW_USER          0x0000000000000001ULL // регистрация новых пользователей
+#define NOTIFY_DUMMY                      0x0000000000000001ULL // получение уведомлений
 
 extern StringList* GetUsrAccessStrList();
 extern StringList* GetUsrNotifyStrList();

@@ -1,17 +1,21 @@
 #ifndef SM_STRINGCLASSES
 #define SM_STRINGCLASSES
 
+#pragma intrinsic(strlen)
+#pragma intrinsic(memcpy)
+
 #include <stdlib.h>
 #include <cstring>
 #include <string>
 #include <iostream>
 
-#define STR_ALIGNMENT  256ULL
+#define STR_ALIGNMENT 256ULL // ѕо-умолчанию под строку будет аллоцироватьс€ STR_ALIGNMENT байт. ≈сли дл€ выполнени€ какой-либо операции
+                             // понадобитс€ больше места, сделаем переаллокацию.
 
 #define MSTRLEN(_str) (int)strlen(_str)
 #define C_STR(str) str.c_str()
 
-inline int IsStrEmpty(const char* p) { return !(p && *p); }
+inline int IsStrEmpty(const char* p) { return !(p && *p); } 
 
 class SMAnsiString
 {
@@ -114,12 +118,19 @@ class SMAnsiString
 			data = new char[bufferSize];
 			memcpy(data, value.c_str(), bsz);
 		}
+		SMAnsiString(SMAnsiString&& rvalue) noexcept
+		{
+			data = rvalue.data;
+			bufferSize = rvalue.bufferSize;
+			rvalue.data = nullptr;
+			rvalue.bufferSize = 0ull;
+		}
 
 		// деструктор
-		~SMAnsiString() { delete[] data; }
+		~SMAnsiString() { if(data) delete[] data; }
 
 		// методы
-		const char* c_str() const { return data; }	// возвращаем —»шную строку
+		const char* c_str() const { return data; }	// возвращаем const buffer со строкой
 		int length() const { return (int)strlen(data); }	// длина строки
 		int SetChar(int idx, const char c)
 		{
@@ -208,9 +219,9 @@ class SMAnsiString
 				Result[NewLength] = '\0';
 
 				SMAnsiString Ret(Result, NewLength+1);
-				return Ret;
+				return std::move(Ret);
 			}
-			else return SMAnsiString(data);
+			else return std::move(SMAnsiString(data));
 		}
 		static SMAnsiString smprintf(const char* format, ...)
 		{
@@ -222,7 +233,7 @@ class SMAnsiString
 			vsprintf(buf, format, ap);
 			va_end(ap);
 			SMAnsiString ret(buf, bsz);
-			return ret;
+			return std::move(ret);
 		}
 		void smprintf_s(const char* format, ...)
 		{
@@ -258,6 +269,14 @@ class SMAnsiString
 			memcpy(data, value.c_str(), bsz);
 			return *this;
 		}
+		SMAnsiString& operator=(SMAnsiString&& rvalue)
+		{
+			data = rvalue.data;
+			bufferSize = rvalue.bufferSize;
+			rvalue.data = nullptr;
+			rvalue.bufferSize = 0ull;
+			return *this;
+		}
 		SMAnsiString& operator=(const char* str)
 		{
 			size_t slen = (str)?strlen(str):0ull;
@@ -280,19 +299,19 @@ class SMAnsiString
 		{	
 			SMAnsiString ret(data);
 			ret += Value;
-			return ret;
+			return std::move(ret);
 		}
 		SMAnsiString operator+(const char *Value) const
 		{
 			SMAnsiString ret(data);
 			ret += Value;
-			return ret;
+			return std::move(ret);
 		}
 		SMAnsiString operator+(char Value) const
 		{
 			SMAnsiString ret(data);
 			ret += Value;
-			return ret;
+			return std::move(ret);
 		}
 		SMAnsiString& operator+=(const SMAnsiString& Value)
 		{
@@ -421,7 +440,7 @@ class SMAnsiString
 		{
 			SMAnsiString ret(lvalue);
 			ret += rvalue;
-			return ret;
+			return std::move(ret);
 		}
 
 #if 0 

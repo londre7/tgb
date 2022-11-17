@@ -22,6 +22,7 @@
     <ClCompile Include="..\src\botapi.cpp" />
     <ClCompile Include="..\src\botutils.cpp" />
     <ClCompile Include="..\src\callback.cpp" />
+    <ClCompile Include="..\src\chat.cpp" />
     <ClCompile Include="..\src\configs.cpp" />
     <ClCompile Include="..\src\db.cpp" />
     <ClCompile Include="..\src\http.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="..\include\botmessages.h" />
     <ClInclude Include="..\include\botutils.h" />
     <ClInclude Include="..\include\callback.h" />
+    <ClInclude Include="..\include\chat.h" />
     <ClInclude Include="..\include\configs.h" />
     <ClInclude Include="..\include\custombuffer.h" />
     <ClInclude Include="..\include\db.h" />

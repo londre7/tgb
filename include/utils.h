@@ -43,6 +43,8 @@ int WhatDay(int D, int M, int Y);
 int GetDays(int month, int year);
 bool GetDateFromString(const SMAnsiString& str, int& day, int& month, int& year);
 SMAnsiString MakePermissionString(uint64_t permission, const StringList* str = nullptr);
+time_t GetBeginDay(time_t _tm);
+time_t GetBeginDayGM(time_t _gtm);
 
 // MEM.H
 //void* operator new(std::size_t size);

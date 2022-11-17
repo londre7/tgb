@@ -32,18 +32,11 @@ inline void FindThread::mutex_init()
 }
 static bool SetStartFindTime(uint64_t uid)
 {
-	bool b = InsertToDB
-	(
-		SMAnsiString::smprintf
-		(
-			"INSERT INTO tgb_find (uid, start_find_time) VALUES (%llu, %d)",
-			uid,
-			(int)time(NULL)
-		)
-	);
-	if (!b)
+	MySQLTablePtr tbl(QueryFromDB(SMAnsiString::smprintf("SELECT uid FROM tgb_find WHERE uid=%llu",uid)));
+	if (tbl && tbl->Rows)
 	{
-		b = InsertToDB
+		// обновляем
+		return InsertToDB
 		(
 			SMAnsiString::smprintf
 			(
@@ -53,7 +46,19 @@ static bool SetStartFindTime(uint64_t uid)
 			)
 		);
 	}
-	return b;
+	else
+	{
+		// добавляем
+		return  InsertToDB
+		(
+			SMAnsiString::smprintf
+			(
+				"INSERT INTO tgb_find (uid, start_find_time) VALUES (%llu, %d)",
+				uid,
+				(int)time(NULL)
+			)
+		);
+	}
 }
 void* FindThread::thrFunc(void* arg)
 {
@@ -100,13 +105,18 @@ void* FindThread::thrFunc(void* arg)
 				SetUserState(uid, USRSTATE_FIND, "");
 				continue;
 			}
+			uint64_t recepient = usrlist_tbl->Cell[0][1];
+
+			// создаём чат
+			uint64_t innerID = CreateChat(uid, recepient);
+			if(!innerID)
+				SEND_MSG_AND_CONTINUE(uid, BOTMSG_INTERNAL_ERROR);
 
 			// берём первого попавшегося, ставим обоим состояние "чат" и в параметры ставим ID собеседника
-			uint64_t recepient = usrlist_tbl->Cell[0][1];
-			const char* params_str = "{\"chatid\":\"%llu\"}";
-			if (!SetUserState(uid, USRSTATE_CHAT, SMAnsiString::smprintf(params_str, recepient)))
+			const char* params_str = "{\"chatid\":\"%llu\",\"innerid\":\"%llu\"}";
+			if (!SetUserState(uid, USRSTATE_CHAT, SMAnsiString::smprintf(params_str, recepient, innerID)))
 				SEND_MSG_AND_CONTINUE(uid, BOTMSG_INTERNAL_ERROR);
-			if (!SetUserState(recepient, USRSTATE_CHAT, SMAnsiString::smprintf(params_str, uid)))
+			if (!SetUserState(recepient, USRSTATE_CHAT, SMAnsiString::smprintf(params_str, uid, innerID)))
 				SEND_MSG_AND_CONTINUE(uid, BOTMSG_INTERNAL_ERROR);
 
 			// отправляем обоим сообщения
@@ -441,8 +451,6 @@ void* UpdThreadFunc(void *arg)
 				}
 				else
 				{
-					std::unique_ptr<SMKeyList> usr_list(GetUsersListWithNotifyMask(NOTIFY_REGISTER_NEW_USER));
-					tgbot_SendMessage(usr_list.get(), SMAnsiString::smprintf(BOTMSG_REGISTER_NEW_USER, C_STR(usr.InfoStr())));
 					WriteFormatMessage(SYSTEMMSG_REGISTER_USR_SUCCESS, TGB_TEXTCOLOR_LIGHTBLUE, C_STR(usr.Username), C_STR(usr.FirstName), C_STR(usr.LastName), C_STR(usr.LanguageCode));
 				}
 			}

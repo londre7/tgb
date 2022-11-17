@@ -463,6 +463,30 @@ SMAnsiString MakePermissionString(uint64_t permission, const StringList *str)
 	);
 }
 
+time_t GetBeginDay(time_t _tm)
+{
+	tm* ct;
+	ct = localtime(&_tm);
+	ct->tm_sec = 0;
+	ct->tm_min = 0;
+	ct->tm_hour = 0;
+	return mktime(ct);
+}
+
+time_t GetBeginDayGM(time_t _gtm)
+{
+	tm* ct;
+	ct = gmtime(&_gtm);
+	ct->tm_sec = 0;
+	ct->tm_min = 0;
+	ct->tm_hour = 0;
+#if _WIN32
+	return _mkgmtime(ct);
+#else
+	return timegm(ct);
+#endif // _WIN32
+}
+
 // MEM.CPP
 template <size_t _sz, size_t _alignment>
 class SMAllocator

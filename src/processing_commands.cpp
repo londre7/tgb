@@ -95,29 +95,40 @@ void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat 
 
 void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const StringList* Params, uint64_t MessageID)
 {
+	#if 0
 	// клавиатура, чисто для примера
 	static std::vector<InlineKeyboardDef> kb_start =
 	{
 		{ INLINEBTN_CAPTION_PRIVATE_POLICY, CALLBACK_PRIVATE_POLICY, nullptr },
-		//{ "#newrow",						nullptr,                 nullptr },
-		//{ INLINEBTN_CAPTION_ABOUT,          CALLBACK_ABOUT,          &CallbackParamsDef_About }
+		{ "#newrow",						nullptr,                 nullptr },
+		{ INLINEBTN_CAPTION_ABOUT,          CALLBACK_ABOUT,          &CallbackParamsDef_About }
 	};
+
+	// параметры для callback
+	StringList valuesAbout = { "param" };
+	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb(MakeInlineKeyboardFromDef(kb_start, { nullptr,&valuesAbout }));
+	#endif
 
 	TGBOT_ReplyKeyboardMarkup kb_cmd(true, false, true);
 	kb_cmd.CreateButton(REPLYBTN_CAPTION_FIND);
 
-	// параметры для callback
-	StringList valuesAbout = { "param" };
-	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb(MakeInlineKeyboardFromDef(kb_start, {nullptr,&valuesAbout}));
-
 	// посылаем сообщенние с клавой
 	SMAnsiString text;
-	text.smprintf_s(BOTMSG_CMD_START, C_STR(MakeFullUserName(RecvUser)));
+	text.smprintf_s(BOTMSG_CMD_START, C_STR(MakeFullUserName(RecvUser)), STR_DONATIONS_REQUSITS);
 	tgbot_SendMessage(RecvChat->Id, text, &kb_cmd);
 }
 
 void sc_processing_find(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
 {
+#if 0
+	// проверяем, может ли пользователь пользоваться чатом
+	const size_t MAX_FREE_CHATS_PER_DAY = 5ull;
+	const time_t dayBegin = GetBeginDay(time(NULL));
+	size_t n = GetNumChatsForUser(RecvUser->Id, dayBegin, dayBegin+86400);
+	if (n >= MAX_FREE_CHATS_PER_DAY)
+		SEND_MSG_AND_RETURN(RecvChat->Id, BOTMSG_LIMIT_FREE_CHATS);
+#endif // 0
+
 	// уводим поиск в отдельный поток
 	GetFindThread()->StartFind(dbusrinfo.UID);
 }
@@ -161,8 +172,13 @@ void sc_processing_stop(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* Re
 	// достаём ID собеседника
 	GET_USRSTATE_PARAMS(dbusrinfo.StateParams, USRSTATE_CHAT_params);
 	uint64_t recepient = gupvalues.at(0);
+	uint64_t innerID = gupvalues.at(1);
 
-	// завершаем диалог
+	// закрываем чат
+	if(!StopChat(innerID, RecvUser->Id))
+		SEND_MSG_AND_RETURN(RecvChat->Id, BOTMSG_INTERNAL_ERROR);
+
+	// переводим пользователей в обычное состояние
 	if (!SetUserState(dbusrinfo, USRSTATE_FREE, ""))
 		SEND_MSG_AND_RETURN(RecvChat->Id, BOTMSG_INTERNAL_ERROR);
 	if (!SetUserState(recepient, USRSTATE_FREE, ""))
@@ -194,7 +210,7 @@ static void proc_getflag_cmd(uint64_t flag, const StringList* str, const SMAnsiS
 	uint64_t chatId, DB_User& dbusrinfo, int to_state)
 {
 	// достаём параметры
-	const size_t numparam = Params ? Params->size() : 0;
+	const size_t numparam = Params ? Params->size() : 0ull;
 	if (!numparam)
 	{
 		// переводим в интерактивный режим

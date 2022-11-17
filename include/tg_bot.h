@@ -45,9 +45,10 @@
 #include "botmessages.h"
 #include "parser.h"
 #include "bitmask.h"
+#include "chat.h"
 
 #define TGBOT_APPTITLE				"Telegram Bot"
-#define TGBOT_VERSION 				"0.1.0"
+#define TGBOT_VERSION 				"0.1.1"
 
 #define MAKE_FULL_PATH(filename)	GetExeDir() + filename
 #define TGBOT_BOTSTATE_FILE			"state"

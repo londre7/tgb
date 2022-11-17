@@ -3,7 +3,8 @@
 // тут объявляем параметры для тех состояний, где они нужны
 StringList USRSTATE_CHAT_params =
 {
-	"chatid"
+	"chatid",
+	"innerid"
 };
 StringList USRSTATE_SETPERMISSION_INPUT_NBIT_params =
 {
@@ -24,7 +25,7 @@ static StringList usrAccessStrList =
 // уведомления
 static StringList usrNotifyStrList =
 {
-	"Регистрация новых пользователей",    // NOTIFY_REGISTER_NEW_USER
+	"Получение уведомлений",    // NOTIFY_DUMMY
 };
 StringList* GetUsrAccessStrList() { return &usrAccessStrList; }
 StringList* GetUsrNotifyStrList() { return &usrNotifyStrList; }
@@ -175,7 +176,7 @@ bool SetUserNotify(uint64_t uid, uint64_t notify)
 
 SMKeyList* GetUsersListWithNotifyMask(uint64_t notify_mask)
 {
-	std::unique_ptr<SMMYSQL_Table> usr_tbl
+	MySQLTablePtr usr_tbl
 	(
 		QueryFromDB
 		(
