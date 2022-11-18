@@ -39,7 +39,7 @@ static const char* CheckUserState(int cmd_usrstate, const DB_User& user)
 {
 	const char *EMPTYSTR = "";
 	// здесь объявляем кастомные сообщения, которые будут выводиться, если пользователь не в нужном состянии
-	static std::map<int, const char*> msgMap =
+	static const std::map<int, const char*> msgMap =
 	{
 		{ USRSTATE_CHAT, BOTMSG_OUTSIDE_CHAT }
 	};
@@ -59,7 +59,7 @@ static const char* CheckUserState(int cmd_usrstate, const DB_User& user)
 		return EMPTYSTR;
 }
 
-static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString& param, TGBOT_Message* message)
+static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString &param, TGBOT_Message* message)
 {
 	// проверяем разрешения
 	if (!CheckUserPermission(cmd.permission, dbusrinfo, cmd.and_flag))
@@ -76,7 +76,7 @@ static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString& para
 	return;
 }
 
-void RunProcCmd(const SMAnsiString& cmd, const SMAnsiString& param, TGBOT_Message* message, DB_User& dbusrinfo)
+void RunProcCmd(const SMAnsiString &cmd, const SMAnsiString &param, TGBOT_Message* message, DB_User& dbusrinfo)
 {
 	// выполняем команду
 	for (auto& command : CmdDef)
@@ -88,7 +88,7 @@ void RunProcCmd(const SMAnsiString& cmd, const SMAnsiString& param, TGBOT_Messag
 	sc_processing_unknown(dbusrinfo, message->From, message->Chat, param, message->Message_Id);
 }
 
-void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, SMAnsiString Params, uint64_t MessageID)
+void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const SMAnsiString &Params, uint64_t MessageID)
 {
 	tgbot_SendMessage(RecvChat->Id, BOTMSG_CMD_UNKNOWN);
 }
@@ -113,8 +113,7 @@ void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *R
 	kb_cmd.CreateButton(REPLYBTN_CAPTION_FIND);
 
 	// посылаем сообщенние с клавой
-	SMAnsiString text;
-	text.smprintf_s(BOTMSG_CMD_START, C_STR(MakeFullUserName(RecvUser)), STR_DONATIONS_REQUSITS);
+	SMAnsiString text = SMAnsiString::smprintf(BOTMSG_CMD_START, C_STR(MakeFullUserName(RecvUser)), STR_DONATIONS_REQUSITS);
 	tgbot_SendMessage(RecvChat->Id, text, &kb_cmd);
 }
 
@@ -220,7 +219,7 @@ static void proc_getflag_cmd(uint64_t flag, const StringList* str, const SMAnsiS
 	if (numparam != 1)
 		SEND_MSG_AND_RETURN(chatId, helpmsg);
 
-	const SMAnsiString & target_user = Params->at(0);
+	const SMAnsiString &target_user = Params->at(0);
 	std::unique_ptr<DB_User> usr((target_user.IsValidNumber()) ? GetUserByUID(target_user) : GetUserByUsername(target_user));
 	if (!usr)
 		SEND_MSG_AND_RETURN_WITH_BTN(chatId, BOTMSG_USER_NOT_FOUND, REPLYBTN_CAPTION_FIND);
@@ -243,9 +242,9 @@ static void proc_setflag_cmd(uint64_t &flag, const SMAnsiString& helpmsg, const 
 		SEND_MSG_AND_RETURN(chatId, helpmsg);
 
 	// достаём параметры
-	const SMAnsiString & target_user = Params->at(0);
-	const SMAnsiString & nbit_str = Params->at(1);
-	const SMAnsiString & setval_str = Params->at(2);
+	const SMAnsiString &target_user = Params->at(0);
+	const SMAnsiString &nbit_str = Params->at(1);
+	const SMAnsiString &setval_str = Params->at(2);
 	const bool IsUID = target_user.IsValidNumber();
 
 	// валидация параметров
@@ -361,7 +360,7 @@ void sc_processing_setnotify(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Cha
 
 void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, TGBOT_Message *message)
 {
-	SMAnsiString &Message = message->Text;
+	const SMAnsiString &Message = message->Text;
 	uint64_t &MessageID = message->Message_Id;
 
 	// обработка нажатия ReplyBtn
@@ -397,7 +396,7 @@ void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* Recv
 		case USRSTATE_SETPERMISSION_INPUT_UID:
 		case USRSTATE_SETNOTIFY_INPUT_UID:
 			{
-				static std::map<int, int> toStateMap = 
+				static const std::map<int, int> toStateMap = 
 				{
 					{ USRSTATE_SETPERMISSION_INPUT_UID, USRSTATE_SETPERMISSION_INPUT_NBIT },
 					{ USRSTATE_SETNOTIFY_INPUT_UID,     USRSTATE_SETNOTIFY_INPUT_NBIT     },
@@ -426,7 +425,7 @@ void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* Recv
 		case USRSTATE_SETPERMISSION_INPUT_NBIT:
 		case USRSTATE_SETNOTIFY_INPUT_NBIT:
 			{
-				static std::map<int, int> toStateMap = 
+				static const std::map<int, int> toStateMap = 
 				{
 					{ USRSTATE_SETPERMISSION_INPUT_NBIT, USRSTATE_SETPERMISSION_INPUT_VALUE },
 					{ USRSTATE_SETNOTIFY_INPUT_NBIT,     USRSTATE_SETNOTIFY_INPUT_VALUE     },
@@ -438,7 +437,7 @@ void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* Recv
 					USRSTATE_INIT_PARAMS(USRSTATE_SETPERMISSION_INPUT_VALUE_params);
 					{
 						GET_USRSTATE_PARAMS(RecvUserInfo.StateParams, USRSTATE_SETPERMISSION_INPUT_NBIT_params);
-						pvalues.push_back(gupvalues.at(0)); // uid
+						pvalues.push_back(std::move(gupvalues.at(0))); // uid
 						pvalues.push_back(Message);         // nbit
 					}
 					RecvUserInfo.State = toStateMap.at(RecvUserInfo.State); //USRSTATE_SETPERMISSION_INPUT_VALUE;
@@ -452,7 +451,7 @@ void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* Recv
 		case USRSTATE_SETPERMISSION_INPUT_VALUE:
 		case USRSTATE_SETNOTIFY_INPUT_VALUE:
 			{
-				static std::map<int, cmd_proc_func> toStateMap =
+				static const std::map<int, cmd_proc_func> toStateMap =
 				{
 					{ USRSTATE_SETPERMISSION_INPUT_VALUE, sc_processing_setpermissions },
 					{ USRSTATE_SETNOTIFY_INPUT_VALUE,     sc_processing_setnotify      },

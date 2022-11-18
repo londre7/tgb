@@ -16,12 +16,7 @@ struct HTTP_Response
 	HTTP_Response() : Content(65536ull) {}
 };
 
-extern HTTP_Response* ParseHTTPResponse(char *SrcData, unsigned int SrcLength);
-extern HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, int &Err);
-extern HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err);
-extern HTTP_Response* HTTP_Connect(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, int &Err);
-extern HTTP_Response* HTTP_Post_With_Content_v2(SMAnsiString Host, int Port, bool Tunnel, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, int ContentLength, int &Err);
-extern HTTP_Response* HTTP_Post_Without_Response(SMAnsiString Host, int Port, bool Tunnel, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, int ContentLength, int &Err);
-extern HTTP_Response* HTTP_Post_With_Content_v3(SMAnsiString Host, int Port, bool Tunnel, bool Async, int Timeout, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, int ContentLength, int &Err);
+extern HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, int &Err);
+extern HTTP_Response* HTTP_Post(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err);
 
 #endif

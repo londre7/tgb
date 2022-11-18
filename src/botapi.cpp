@@ -13,14 +13,11 @@ bool tgbot_GetUpdates(std::vector<TGBOT_Update*> &updates, uint64_t offset)
 	updates.clear();
 
 	BotConfStruct* bot_conf = GetBotConf();
-	SMAnsiString get_doc = std::move
+	SMAnsiString get_doc = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"/bot%s/getUpdates?timeout=%d",
-			C_STR(bot_conf->GetParam(BotConfStruct::Token)),
-			bot_conf->GetIntParam(BotConfStruct::LongpollTimeout)
-		)
+		"/bot%s/getUpdates?timeout=%d",
+		C_STR(bot_conf->GetParam(BotConfStruct::Token)),
+		bot_conf->GetIntParam(BotConfStruct::LongpollTimeout)
 	);
 	if (offset)
 		get_doc += SMAnsiString::smprintf("&offset=%llu", offset);
@@ -206,15 +203,12 @@ TGBOT_User* tgbot_getMe()
 
 void tgbot_SendMessage(uint64_t ChatID, const SMAnsiString &Text, TGBOT_Keyboard *Keyboard)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"parse_mode\":\"HTML\", \"text\":\"%s\"%s }\0",
-			ChatID,
-			C_STR(Text),
-			C_STR(((Keyboard) ? ", \"reply_markup\":" + Keyboard->ToJSON() : ""))
-		)
+		"{ \"chat_id\":%llu, \"parse_mode\":\"HTML\", \"text\":\"%s\"%s }\0",
+		ChatID,
+		C_STR(Text),
+		C_STR(((Keyboard) ? ", \"reply_markup\":" + Keyboard->ToJSON() : ""))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendMessage", content));
 }
@@ -229,15 +223,12 @@ void tgbot_SendMessage(SMKeyList *ChatIDList, const SMAnsiString &Text, TGBOT_Ke
 
 void tgbot_forwardMessage(uint64_t ChatID, uint64_t FromChatID, uint64_t MessageID)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"from_chat_id\":%llu, \"message_id\":%llu }\0",
-			ChatID,
-			FromChatID,
-			MessageID
-		)
+		"{ \"chat_id\":%llu, \"from_chat_id\":%llu, \"message_id\":%llu }\0",
+		ChatID,
+		FromChatID,
+		MessageID
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("forwardMessage", content));
 }
@@ -261,23 +252,20 @@ void tgbot_SendPhotoWithUpload(const SMAnsiString &Filename, uint64_t ChatID, co
 	SMOutBuffer send_content(file_size+1024);
 
 	const char *part_delimiter = "6496723c";
-	SMAnsiString get_doc = std::move(SMAnsiString::smprintf("/bot%s/sendPhoto", C_STR(bot_conf->GetParam(BotConfStruct::Token))));
-	SMAnsiString content = std::move
+	SMAnsiString get_doc = SMAnsiString::smprintf("/bot%s/sendPhoto", C_STR(bot_conf->GetParam(BotConfStruct::Token)));
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"--%s\r\n"
-			"Content-Disposition: form-data; name=\"chat_id\"\r\n"
-			"\r\n%llu\r\n"
-			"--%s\r\n"
-			"Content-Disposition: form-data; name=\"photo\"; filename=\"ph.jpg\"\r\n"
-			"Content-Type: image/jpeg\r\n"
-			"Content-Transfer-Encoding: binary\r\n"
-			"\r\n",
-			part_delimiter,
-			ChatID,
-			part_delimiter
-		)
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"chat_id\"\r\n"
+		"\r\n%llu\r\n"
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"photo\"; filename=\"ph.jpg\"\r\n"
+		"Content-Type: image/jpeg\r\n"
+		"Content-Transfer-Encoding: binary\r\n"
+		"\r\n",
+		part_delimiter,
+		ChatID,
+		part_delimiter
 	);
 	send_content.PutBlock(C_STR(content), content.length());
 	send_content.PutBlock(filebuf, file_size);
@@ -301,15 +289,12 @@ void tgbot_SendPhotoWithUpload(const SMAnsiString &Filename, uint64_t ChatID, co
 
 void tgbot_SendPhotoByFileId(const SMAnsiString & FileID, uint64_t ChatID, const SMAnsiString & Caption)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"photo\":\"%s\", \"caption\":\"%s\" }\0",
-			ChatID,
-			C_STR(FileID),
-			C_STR(Caption)
-		)
+		"{ \"chat_id\":%llu, \"photo\":\"%s\", \"caption\":\"%s\" }\0",
+		ChatID,
+		C_STR(FileID),
+		C_STR(Caption)
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendPhoto", content));
 }
@@ -322,26 +307,20 @@ void tgbot_SendDocument(const char *buf, size_t buflen, const SMAnsiString &outF
 	const char *part_delimiter = "6496723c";
 	SMOutBuffer send_content(buflen + 1024);
 
-	SMAnsiString get_doc = std::move	
+	SMAnsiString get_doc = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"/bot%s/sendDocument",
-			C_STR(bot_conf->GetParam(BotConfStruct::Token))
-		)
+		"/bot%s/sendDocument",
+		C_STR(bot_conf->GetParam(BotConfStruct::Token))
 	);
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"--%s\r\n"
-			"Content-Disposition: form-data; name=\"chat_id\"\r\n"
-			"\r\n"
-			"%llu"
-			"\r\n",
-			part_delimiter,
-			ChatID
-		)
+		"--%s\r\n"
+		"Content-Disposition: form-data; name=\"chat_id\"\r\n"
+		"\r\n"
+		"%llu"
+		"\r\n",
+		part_delimiter,
+		ChatID
 	);
 	content += SMAnsiString::smprintf
 	(
@@ -376,62 +355,50 @@ void tgbot_SendDocument(const char *buf, size_t buflen, const SMAnsiString &outF
 
 void tgbot_editMessageText(uint64_t chat_id, uint64_t message_id, const SMAnsiString& text, TGBOT_InlineKeyboardMarkup* keyboard)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"message_id\":%llu, \"parse_mode\":\"HTML\", \"text\":\"%s\"%s }\0", 
-			chat_id, 
-			message_id, 
-			C_STR(text), 
-			C_STR(((keyboard)?", \"reply_markup\":"+keyboard->ToJSON():""))
-		)
+		"{ \"chat_id\":%llu, \"message_id\":%llu, \"parse_mode\":\"HTML\", \"text\":\"%s\"%s }\0", 
+		chat_id, 
+		message_id, 
+		C_STR(text), 
+		C_STR(((keyboard)?", \"reply_markup\":"+keyboard->ToJSON():""))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("editMessageText", content));
 }
 
 void tgbot_sendVenue(uint64_t chat_id, double latitude, double longitude, const SMAnsiString& title, const SMAnsiString& address, TGBOT_InlineKeyboardMarkup* keyboard)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"latitude\":%s, \"longitude\":%s, \"title\":\"%s\", \"address\":\"%s\"%s }\0", 
-			chat_id, 
-			C_STR(SMAnsiString(latitude)),
-			C_STR(SMAnsiString(longitude)),
-			C_STR(title),
-			C_STR(address),
-			C_STR(((keyboard) ? ", \"reply_markup\":" + keyboard->ToJSON() : ""))
-		)
+		"{ \"chat_id\":%llu, \"latitude\":%s, \"longitude\":%s, \"title\":\"%s\", \"address\":\"%s\"%s }\0", 
+		chat_id, 
+		C_STR(SMAnsiString(latitude)),
+		C_STR(SMAnsiString(longitude)),
+		C_STR(title),
+		C_STR(address),
+		C_STR(((keyboard) ? ", \"reply_markup\":" + keyboard->ToJSON() : ""))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendVenue", content));
 }
 
 void tgbot_deleteMessage(uint64_t chat_id, uint64_t message_id)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"message_id\":%llu }\0",
-			chat_id,
-			message_id
-		)
+		"{ \"chat_id\":%llu, \"message_id\":%llu }\0",
+		chat_id,
+		message_id
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("deleteMessage", content));
 }
 
 void tgbot_sendSticker(uint64_t chat_id, const SMAnsiString &sticker)
 {
-	SMAnsiString content = std::move
+	SMAnsiString content = SMAnsiString::smprintf
 	(
-		SMAnsiString::smprintf
-		(
-			"{ \"chat_id\":%llu, \"sticker\":\"%s\" }\0",
-			chat_id,
-			C_STR(sticker)
-		)
+		"{ \"chat_id\":%llu, \"sticker\":\"%s\" }\0",
+		chat_id,
+		C_STR(sticker)
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendSticker", content));
 }

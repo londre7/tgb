@@ -264,10 +264,6 @@ void* UpdThreadFunc(void *arg)
 {
 	int          thr_id=0;  // id потока
 	DB_User      u_recv;
-	int          kdel;
-	SMAnsiString cmd,
-	             param,
-	             recv_cmd;
 	MYSQL_RES    *res;
 	
 	// получаем id потока
@@ -382,7 +378,7 @@ void* UpdThreadFunc(void *arg)
 				if (message->From->Id == message->Chat->Id) // только из лички
 				{
 					WriteMessage(SMAnsiString::smprintf(SYSTEMMSG_RECV_MESSAGE, C_STR(message->From->Username), C_STR(message->From->FirstName), C_STR(message->Text)));
-					recv_cmd = message->Text;
+					SMAnsiString recv_cmd = message->Text;
 					if(recv_cmd[0] != '/')
 					{
 						// не команда
@@ -391,34 +387,18 @@ void* UpdThreadFunc(void *arg)
 					else
 					{
 						// готовим параметры
-						kdel = recv_cmd.Pos(' ');
-						if(kdel > 0) cmd = recv_cmd.Delete(kdel, recv_cmd.length());
-						else cmd = recv_cmd;
-						
-						if(kdel > 0)
+						const char* ptrb = "";
+						int kdel = recv_cmd.Pos(' ');
+						if (kdel > 0)
 						{
-							param = recv_cmd;
-							param = param.Delete(0, kdel+1);
-							for(int i=0; i<param.length(); i++)
-							{
-								if(i == 0)
-								{
-									if(param[i] != ' ') break;
-								}				
-								else
-								{
-									if(param[i] != ' ')
-									{
-										param = param.Delete(0, i);
-										break;
-									}
-								}
-							}
+							recv_cmd[kdel] = '\0';
+							ptrb = &recv_cmd[kdel+1];
+							// если первые символы пробелы - перемещаем указатель до первого символа
+							while (*ptrb == ' ') { ptrb++; }
 						}
-						else param = "";
 						
 						// выполняем команду
-						RunProcCmd(cmd, param, message, u_recv);
+						RunProcCmd(recv_cmd, ptrb, message, u_recv);
 					}
 				}
 			}

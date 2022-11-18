@@ -35,13 +35,13 @@ static SMAnsiString GenerateCallbackID()
 	memcpy(&r[8], &r2, sizeof(r2));
 	SHA256(r, sizeof(r), callback_hash_bin);
 	Hexlify(callback_hash, callback_hash_bin, 16);
-	return std::move(SMAnsiString(callback_hash));
+	return SMAnsiString(callback_hash);
 }
 
 // для одной кнопки
 SMAnsiString MakeCallbackData(const SMAnsiString &type, StringList *keys, StringList *values)
 {
-	SMAnsiString id = std::move(GenerateCallbackID());
+	SMAnsiString id = GenerateCallbackID();
 	if (keys && values)
 	{
 		InsertToDB
@@ -55,7 +55,7 @@ SMAnsiString MakeCallbackData(const SMAnsiString &type, StringList *keys, String
 			)
 		);
 	}	
-	return std::move(SMAnsiString::smprintf("%s_%s", C_STR(id), C_STR(type)));
+	return SMAnsiString::smprintf("%s_%s", C_STR(id), C_STR(type));
 }
 // для пачки
 bool RegisterCallbackData(const StringList &callback, const std::vector<StringList*>& params, const std::vector<StringList*>& values)
@@ -67,7 +67,7 @@ bool RegisterCallbackData(const StringList &callback, const std::vector<StringLi
 
 		SMAnsiString refref = callback;
 		refref[pos] = '\0';
-		return std::move(SMAnsiString::smprintf("(\'%s\',\'%s\',\'%s\')", C_STR(refref), &refref[pos + 1], C_STR(ParamsToJSON(*keys, *values))));
+		return SMAnsiString::smprintf("(\'%s\',\'%s\',\'%s\')", C_STR(refref), &refref[pos + 1], C_STR(ParamsToJSON(*keys, *values)));
 	};
 
 	const size_t callbacknum = callback.size();
@@ -101,7 +101,7 @@ static SMAnsiString GetPressedBtnCaption(const TGBOT_CallbackQuery* RecvCallback
 				return kb->Buttons[i][j]->Text;
 		}
 	}
-	return std::move(SMAnsiString());
+	return SMAnsiString();
 }
 
 void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, const DB_User &dbusrinfo)

@@ -45,18 +45,10 @@ SMAnsiString ExtractFilePath(SMAnsiString FileName)
 
 bool LoadLastBotState(SMAnsiString FileName)
 {
-	std::ifstream file;
-	StringList    file_strings;
-	unsigned int  file_size;    // размер файла
-	struct stat   st;           // структура для получения размера файла
-	char          *fbuffer;     // буфер, куда читаем
-	int           size_of_char;
-	char          letter;
-	int           write_pos;    // позиция в буфере, куда запишем считанный символ
-	
 	// размер файла
+	struct stat st;
 	stat(C_STR(FileName), &st);
-	file_size = st.st_size;
+	off_t file_size = st.st_size;
 	
 	if(file_size == 0) 
 	{
@@ -65,6 +57,7 @@ bool LoadLastBotState(SMAnsiString FileName)
 	}
 	
 	// открываем файл
+	std::ifstream file;
 	file.open(C_STR(FileName), std::ios::binary);
 	if(!file.is_open())
 	{
@@ -73,10 +66,12 @@ bool LoadLastBotState(SMAnsiString FileName)
 	}
 	
 	// читаем файл
-	fbuffer = new char[file_size+1];
-	size_of_char = sizeof(letter);
-	write_pos = 0;
-	for(int i=0; i<file_size; i++)
+	StringList file_strings;
+	char *fbuffer = new char[file_size+1];
+	char letter;
+	const size_t size_of_char = sizeof(letter);
+	size_t write_pos = 0;
+	for(off_t i=0; i<file_size; i++)
 	{
 		file.read(reinterpret_cast<char*>(&letter), size_of_char);
 		if(letter != '\n') 
@@ -149,12 +144,11 @@ static SMAnsiString GetFormatOutputStr(const SMAnsiString& Message, int Color)
 		default: { begin_format = ""; end_format = ""; }
 		#undef WMCOLOR
 	}
-	return SMAnsiString().smprintf("[%s] %s%s%s\n", C_STR(current_time.GMDateTimeString()), C_STR(begin_format), C_STR(Message), C_STR(end_format));
+	return SMAnsiString::smprintf("[%s] %s%s%s\n", C_STR(current_time.GMDateTimeString()), C_STR(begin_format), C_STR(Message), C_STR(end_format));
 }
 static SMAnsiString GetFormatStr(const SMAnsiString& Message)
 {
-	SMDateTime 		current_time;
-	return SMAnsiString::smprintf("[%s] %s\n", C_STR(current_time.GMDateTimeString()), C_STR(Message));
+	return SMAnsiString::smprintf("[%s] %s\n", C_STR(SMDateTime().GMDateTimeString()), C_STR(Message));
 }
 
 void WriteMessage(const SMAnsiString &Message, int Color)

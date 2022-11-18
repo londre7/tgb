@@ -33,7 +33,7 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 	char http_signature[5];
 	memset(http_signature, 0, 5);
 	memcpy(http_signature, buffer, 4);
-	if (SMAnsiString(http_signature) != "HTTP")
+	if(*reinterpret_cast<const uint32_t*>(http_signature) != *reinterpret_cast<const uint32_t*>("HTTP"))
 	{
 		Err = 1004;	// empty response
 		return nullptr;
@@ -44,59 +44,52 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 	resp->ContentType = "";
 
 	// разбираем версию HTTP и код ошибки
+	char *ptrb = buffer;
 	size_t stop_index;
-	SMAnsiString temp;
 	size_t recv_buf_len = strlen(buffer);
 	for (size_t i = 0, round = 0, breakflag = 0; i < recv_buf_len; i++)
 	{
 		switch (round)
 		{
-		case 0:
-		{
-			if (buffer[i] != ' ')
-				temp += buffer[i];
-			else
+			case 0:
 			{
-				resp->HTTPVer = temp;
-				round++;
-				temp = "";
-			}
-			break;
-		}
-		case 1:
-		{
-			if (buffer[i] == '\r')
+				if(buffer[i] == ' ')
+				{
+					buffer[i] = '\0';
+					resp->HTTPVer = ptrb;
+					round++;
+					ptrb = &buffer[i + 1];
+				}
 				break;
-			else if (buffer[i] == '\n')
-			{
-				resp->ErrCode = temp;
-				temp = "";
-				breakflag = 1;
-				stop_index = i + 1;
 			}
-			else
-				temp += buffer[i];
-
-			break;
-		}
+			case 1:
+			{
+				if (buffer[i] == '\r')
+					buffer[i] = '\0';
+				else if (buffer[i] == '\n')
+				{
+					buffer[i] = '\0';
+					resp->ErrCode = ptrb;
+					breakflag = 1;
+					stop_index = i + 1;
+				}
+				break;
+			}
 		}
 
 		if (breakflag == 1) break;
 	}
 
 	// разбираем всё остальное
-	temp = "";
-	SMAnsiString key;
-	SMAnsiString value;
+	char *ptrk = &buffer[stop_index];
+	char *ptrv = nullptr;
 	for (size_t i = stop_index, state = 0, beg, breakflag = 0; i < recv_buf_len; i++)
 	{
 		switch (state)
 		{
 			case 0: // парсим параметр
 			{
-				if (buffer[i] == '\r')
-					break;
-				else if (buffer[i] == '\n')
+				if (buffer[i] == '\n')
 				{
 					stop_index = i + 1;
 					breakflag = 1;
@@ -104,48 +97,36 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 				}
 				else if (buffer[i] == ':')
 				{
-					key = temp;
-					temp = "";
+					buffer[i] = '\0';
+					ptrv = &buffer[i+2];
 					beg = i + 1;
 					state = 1;
 				}
-				else
-				{
-					temp += buffer[i];
-				}
-
 				break;
 			}
-
 			case 1: // парсим значение
 			{
-				if (buffer[i] == ' ')
+				if (buffer[i] == '\r')
 				{
-					if (i == beg) break;
-					else temp += buffer[i];
+					buffer[i] = '\0';
+					break;
 				}
-				else if (buffer[i] == '\r') break;
 				else if (buffer[i] == '\n')
 				{
-					value = temp;
-					SET_HEADER_PARAM(key, value, resp);
-					temp = "";
-					key = "";
-					value = "";
+					buffer[i] = '\0';
+					SET_HEADER_PARAM(ptrk, ptrv, resp);
+					ptrk = &buffer[i + 1];
 					state = 0;
 				}
-				else
-					temp += buffer[i];
 				break;
 			}
 		}
-
 		if (breakflag == 1) break;
 	}
 
 	if (resp->ContentLength > 0)
 	{
-		resp->Content = "";
+		//resp->Content = "";
 		if (strlen(buffer) - stop_index != 0)
 		{
 			// контент тут, копируем
@@ -168,24 +149,26 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 	}
 	else
 	{
-		resp->Content = "";
-		recv_buf_len = strlen(buffer);
+		//recv_buf_len = strlen(buffer);
 		if (recv_buf_len - stop_index != 0)
 		{
 			// сначала длина контента, потом сам контент
-			SMAnsiString clen;
+			ptrb = &buffer[stop_index];
 			for (size_t i = stop_index; i < recv_buf_len; i++)
 			{
-				if (buffer[i] == '\r') continue;
+				if (buffer[i] == '\r')
+				{
+					buffer[i] = '\0';
+					continue;
+				}
 				else if (buffer[i] == '\n')
 				{
+					buffer[i] = '\0';
 					stop_index = i + 1;
 					break;
 				}
-				else
-					clen = clen + buffer[i];
 			}
-			resp->ContentLength = clen;
+			resp->ContentLength = atoi(ptrb);
 			resp->Content = &buffer[stop_index];
 			while (true)
 			{
@@ -209,11 +192,11 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 	return resp;
 }
 
-HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, int& Err)
+HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, int& Err)
 {
 	// получаем IP-адрес из имени хоста
 	SMAnsiString ip_by_host = GetIPFromHost(Host);
-	if (ip_by_host == "") { Err = 1000; return NULL; }  // dns not resolved
+	if (ip_by_host.IsEmpty()) { Err = 1000; return NULL; }  // dns not resolved
 
 	// соединяемся с сервером
 	int sock;
@@ -235,9 +218,8 @@ HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString H
 	}
 
 	// делаем запрос
-	SMAnsiString req;
 	SMAnsiString get_doc = ((UseSSL) ? "https://" : "http://") + HeaderHost + Doc;
-	req.smprintf_s
+	SMAnsiString req = SMAnsiString::smprintf
 	(
 		"GET %s HTTP/1.1\r\n"
 		"Host: %s\r\n"
@@ -279,7 +261,7 @@ HTTP_Response* HTTP_Get(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString H
 	return resp;
 }
 
-HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString HeaderHost, SMAnsiString Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err)
+HTTP_Response* HTTP_Post(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err)
 {
 	// получаем IP-адрес из имени хоста
 	SMAnsiString ip_by_host = GetIPFromHost(Host);
@@ -307,7 +289,6 @@ HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString 
 	// делаем запрос
 	SMAnsiString get_doc = ((UseSSL)? "https://" : "http://") + HeaderHost + Doc;
 	SMAnsiString _ContentReq;
-	SMAnsiString req;
 	if (!IsStrEmpty(ContentType))
 	{
 		_ContentReq.smprintf_s
@@ -318,7 +299,7 @@ HTTP_Response* HTTP_Post(SMAnsiString Host, int Port, bool UseSSL, SMAnsiString 
 			ContentLength
 		);
 	}
-	req.smprintf_s
+	SMAnsiString req = SMAnsiString::smprintf
 	(
 		"POST %s HTTP/1.1\r\n"
 		"Host: %s\r\n"

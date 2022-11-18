@@ -129,5 +129,5 @@ SMAnsiString GetIPFromHost(const SMAnsiString &Host)
 		}
 	}
 	else ret = Host;
-	return ret;
+	return std::move(ret);
 }

@@ -42,15 +42,12 @@ SMMYSQL_Table* QueryFromDB(const SMAnsiString& query)
 std::vector<std::unique_ptr<SMMYSQL_Table>> QueryFromDB(const StringList& queryList)
 {
 	BotConfStruct* bot_conf = GetBotConf();
-	return std::move
+	return sm_mysql_query_list
 	(
-		sm_mysql_query_list
-		(
 			bot_conf->GetParam(BotConfStruct::DBHost),
 			bot_conf->GetParam(BotConfStruct::DBUser),
 			bot_conf->GetParam(BotConfStruct::DBPassword),
 			bot_conf->GetParam(BotConfStruct::DBDatabase),
 			queryList
-		)
 	);
 }

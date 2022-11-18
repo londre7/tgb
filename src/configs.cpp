@@ -5,63 +5,42 @@ bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 	// считываем из файла
 	std::unique_ptr<StringList> file(LoadTextFromFile(FileName));
 	if (file == NULL) return false;
-	if (!file->size())
-	{
-		return false;
-	}
+	const size_t file_count = file->size();
+	if (!file_count) { return false; }
 
+	int assign_pos;
 	SMAnsiString key;
 	SMAnsiString value;
-	int assign_pos;
-	const size_t file_count = file->size();
 	for (size_t i = 0; i < file_count; i++)
 	{
-		if (file->at(i).length() == 2)
+		SMAnsiString &fstr = file->at(i);
+		if (fstr.length() == 2)
 		{
-			if ((file->at(i)[0] != '/') && (file->at(i)[1] != '/'))
-			{
-				file->clear();
+			if ((fstr[0] != '/') && (fstr[1] != '/'))
 				return false;
-			}
 		}
-		else if (file->at(i).length() > 2)
+		else if (fstr.length() > 2)
 		{
-			if ((file->at(i)[0] != L'/') && (file->at(i)[1] != L'/'))
+			if ((fstr[0] != L'/') && (fstr[1] != L'/'))
 			{
-				assign_pos = file->at(i).Pos('=');
+				assign_pos = fstr.Pos('=');
 				if (assign_pos == -1)
-				{
-					file->clear();
 					return false;
-				}
 
-				key = file->at(i);
-				key = key.Delete(assign_pos, key.length());
-				value = file->at(i);
-				value = value.Delete(0, assign_pos + 1);
+				key = fstr.Delete(assign_pos, fstr.length());
+				fstr.DeleteMyself(0, assign_pos + 1);
 
 				if (!key.length())
-				{
-					file->clear();
 					return false;
-				}
-				if (!value.length())
-				{
-					file->clear();
+				if (!fstr.length())
 					return false;
-				}
 
-				ConfStruct->SetParam(key, value);
+				ConfStruct->SetParam(key, fstr);
 			}
 		}
-		else if (file->at(i).length() == 1)
-		{
-			file->clear();
+		else if (fstr.length() == 1)
 			return false;
-		}
 	}
-
-	file->clear();
 	return true;
 }
 

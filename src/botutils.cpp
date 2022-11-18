@@ -11,17 +11,17 @@ static SMAnsiString MakeFullUserName(const SMAnsiString& lastname, const SMAnsiS
 
 SMAnsiString MakeFullUserName(const TGBOT_User* user, bool useUsername)
 {
-	return std::move(MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:""));
+	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
 }
 
 SMAnsiString MakeFullUserName(const DB_User* user, bool useUsername)
 {
-	return std::move(MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:""));
+	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
 }
 
 SMAnsiString MakeUsername(const SMAnsiString& username)
 {
-	return std::move((!username.IsEmpty()) ? SMAnsiString::smprintf("@%s", C_STR(username)) : SMAnsiString(""));
+	return (!username.IsEmpty()) ? SMAnsiString::smprintf("@%s", C_STR(username)) : SMAnsiString("");
 }
 
 SMAnsiString GetMonthStr(int month)
@@ -41,7 +41,7 @@ SMAnsiString GetMonthStr(int month)
 		"Ноябрь",
 		"Декабрь"
 	};
-	return std::move(SMAnsiString(months.at(month-1)));
+	return SMAnsiString(months.at(month-1));
 }
 SMAnsiString GetDayWeekStr(int dw)
 {
@@ -55,7 +55,7 @@ SMAnsiString GetDayWeekStr(int dw)
 		"Сб",
 		"Вс"
 	};
-	return std::move(SMAnsiString(dws.at(dw)));
+	return SMAnsiString(dws.at(dw));
 }
 
 void ShowMessage(bool SrcIsEmpty, uint64_t ChatID, uint64_t MessageID, const SMAnsiString& Text, TGBOT_InlineKeyboardMarkup* Keyboard)
@@ -85,7 +85,7 @@ TGBOT_InlineKeyboardMarkup* MakeInlineKeyboardFromDef(std::vector<InlineKeyboard
 	for (size_t i = 0, ri = 0; i < numbuttons; i++)
 	{
 		if (strcmp(keyboardDef.at(i).caption,"#newrow")==0) { kb->CreateRow(); continue; }
-		callbackData.push_back(std::move(MakeCallbackData(keyboardDef.at(i).callback)));
+		callbackData.push_back(MakeCallbackData(keyboardDef.at(i).callback));
 		pnames.push_back(keyboardDef.at(i).params);
 		kb->CreateButton(keyboardDef.at(i).caption, callbackData.at(ri++), false);
 	}

@@ -27,9 +27,12 @@ class SMAnsiString
 		{
 			if (newlen < bufferSize) return;
 			char* newdata = new char[newlen];
-			memcpy(newdata, data, bufferSize);
+			if (data)
+			{
+				memcpy(newdata, data, bufferSize);
+				delete[] data;
+			}
 			bufferSize = newlen;
-			delete[] data;
 			data = newdata;
 		}
 		void ReallocateIfNeeded(size_t slen, bool addfl=false)
@@ -130,28 +133,28 @@ class SMAnsiString
 		~SMAnsiString() { if(data) delete[] data; }
 
 		// методы
-		const char* c_str() const { return data; }	// возвращаем const buffer со строкой
-		int length() const { return (int)strlen(data); }	// длина строки
-		int SetChar(int idx, const char c)
+		const char* c_str() const { return data; }       // возвращаем const buffer со строкой
+		int length() const { return (int)strlen(data); } // длина строки
+		size_t SetChar(size_t idx, const char c)
 		{
-			const int sl = MSTRLEN(data);
+			const size_t sl = strlen(data);
 			if (idx < 0) idx = 0;
-			else if (idx >= sl) idx = sl-1;
+			else if (idx >= sl) idx = sl-1ull;
 			data[idx] = c;
 			return idx;
 		}
 		SMAnsiString GetLowerCase()
 		{
 			SMAnsiString Ret(data);
-			const int rl = MSTRLEN(data);
+			const size_t rl = strlen(data);
 
-			for (int i = 0; i < rl; i++)
+			for (size_t i = 0; i < rl; i++)
 			{
 				if (((int)Ret[i] >= 65) && ((int)Ret[i] <= 90))
 					Ret.SetChar(i, (int)Ret[i] + 32);
 			}
 
-			return Ret;
+			return std::move(Ret);
 		}
 		SMAnsiString& ToLowerCase()
 		{
@@ -191,37 +194,26 @@ class SMAnsiString
 		}
 		SMAnsiString Delete(int Index, int Count) const
 		{
-			char        *Result;    // результат удаления
-			unsigned int Sum;       // вычисляем новы Count
-			int          Dx,        // кол-во символов, вышедших за пределы массива
-			             NewLength; // количество символов после удаления
-			SMAnsiString Ret;
-			const int sl = length();
-
-			// удаляем только если Count>0 и Index<Length
+			SMAnsiString ret(data);
+			const size_t sl = strlen(data);
 			if ((Count > 0) && (Index < sl))
 			{
-				// вычисляем количество символов. вышедших за пределы
-				Sum = Index + Count;
-				Dx = sl - Sum;
-				if (Dx > 0) Dx = 0;
-
-				NewLength = sl - (Count + Dx);
-				Result = new char[NewLength + 1];
-				for (int i = 0, c = 0; i < sl; i++)
-				{
-					if ((i < Index) || (i >= (Index + (Count + Dx))))
-					{
-						Result[c] = data[i];
-						c++;
-					}
-				}
-				Result[NewLength] = '\0';
-
-				SMAnsiString Ret(Result, NewLength+1);
-				return std::move(Ret);
+				const size_t r_ind = ((Index + Count) > sl) ? sl : (Index + Count);
+				const size_t realLn = (sl - r_ind) + 1ull;
+				memmove(&ret.data[Index], &ret.data[r_ind], realLn);
 			}
-			else return std::move(SMAnsiString(data));
+			return std::move(ret);
+		}
+		SMAnsiString& DeleteMyself(int Index, int Count)
+		{
+			const size_t sl = strlen(data);
+			if ((Count > 0) && (Index < sl))
+			{
+				const size_t r_ind = ((Index + Count) > sl) ? sl : (Index + Count);
+				const size_t realLn = (sl - r_ind) + 1ull;
+				memmove(&data[Index], &data[r_ind], realLn);
+			}
+			return *this;
 		}
 		static SMAnsiString smprintf(const char* format, ...)
 		{
@@ -271,7 +263,7 @@ class SMAnsiString
 		}
 		SMAnsiString& operator=(SMAnsiString&& rvalue)
 		{
-			delete[] data;
+			if(data) delete[] data;
 			data = rvalue.data;
 			bufferSize = rvalue.bufferSize;
 			rvalue.data = nullptr;
@@ -286,6 +278,7 @@ class SMAnsiString
 				ReallocateIfNeeded(slen);
 				memcpy(data, str, slen);
 			}
+			if (!data) Reallocate(STR_ALIGNMENT);
 			data[slen] = '\0';
 			return *this;
 		}
@@ -419,7 +412,7 @@ class SMAnsiString
 			return false;
 		}
 
-		char& operator[](const int idx) const { return data[idx]; }
+		char& operator[](const size_t idx) const { return data[idx]; }
 		
 		operator int() const { return atoi(data); }
 		operator long() const { return atol(data); }
