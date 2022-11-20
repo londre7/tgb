@@ -327,6 +327,8 @@ void* UpdThreadFunc(void *arg)
 			if(message->Text == "")
 			{
 				// если не текстовое сообщение
+				const size_t numphoto = message->Photo.size();
+
 				if(message->Contact != NULL)
 				{
 					WriteFormatMessage(SYSTEMMSG_RECV_CONTACT, TGB_TEXTCOLOR_YELLOW, C_STR(message->Contact->FirstName), C_STR(message->Contact->PhoneNumber), C_STR(message->From->Username), C_STR(message->From->FirstName));
@@ -363,11 +365,11 @@ void* UpdThreadFunc(void *arg)
 						WriteFormatMessage(SYSTEMMSG_RECV_STICKER, TGB_TEXTCOLOR_YELLOW, C_STR(message->Sticker->FileUniqueId), C_STR(message->From->Username), C_STR(message->From->FirstName));
 					}
 				}
-				else if(message->NumPhoto != 0) // да тут могут быть фотки о_@
+				else if(numphoto) // да тут могут быть фотки о_@
 				{
 					if (message->Chat->Id == message->From->Id) // только из лички
 					{
-						WriteFormatMessage(SYSTEMMSG_RECV_PHOTO, TGB_TEXTCOLOR_YELLOW, message->NumPhoto, C_STR(message->From->Username), C_STR(message->From->FirstName));
+						WriteFormatMessage(SYSTEMMSG_RECV_PHOTO, TGB_TEXTCOLOR_YELLOW, numphoto, C_STR(message->From->Username), C_STR(message->From->FirstName));
 					}
 				}
 				else

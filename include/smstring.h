@@ -423,6 +423,7 @@ class SMAnsiString
 		operator unsigned long() const { return strtoul(data, nullptr, 10); }
 		operator unsigned long long() const { return strtoull(data, nullptr, 10); }
 		operator const char* () const { return data; }
+		operator bool() const { return (!strlen(data)) || (SMAnsiString(data).GetLowerCase() == "false") ? false : true; }
 
 		friend std::ostream& operator<<(std::ostream& out, const SMAnsiString& s)
 		{

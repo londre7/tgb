@@ -20,7 +20,7 @@
 #define SYSTEMMSG_RECV_CALLBACK_QUERY     "Callback query \"%s\" from \"%s\" (%s)"
 #define SYSTEMMSG_RECV_CONTACT            "Received contact (%s, %s) from \"%s\" (%s)"
 #define SYSTEMMSG_RECV_STICKER            "Received sticker (%s) from \"%s\" (%s)"
-#define SYSTEMMSG_RECV_PHOTO              "Received photo (%d sizes) from \"%s\" (%s)"
+#define SYSTEMMSG_RECV_PHOTO              "Received photo (%llu sizes) from \"%s\" (%s)"
 #define SYSTEMMSG_RECV_NONTEXTMSG         "Received non-text message from \"%s\" (%s)"
 #define SYSTEMMSG_RECV_MESSAGE            "Received message from \"%s\" (%s): %s"
 #define SYSTEMMSG_RECV_EDITED_MESSAGE     "Edited message (%llu) in chat \"%s\" from \"%s\" (%s): %s"

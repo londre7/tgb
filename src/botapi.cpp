@@ -76,70 +76,38 @@ uint64_t GetChatIDFromUpdate(TGBOT_Update* Upd)
 	return 0;
 }
 
-TGBOT_InlineKeyboardButton::TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton& b)
+TGBOT_KeyboardButton::TGBOT_KeyboardButton(const TGBOT_KeyboardButton* val)
 {
-	this->Text = b.Text;
-	this->Url = b.Url;
-	this->CallbackData = b.CallbackData;
-	this->SwitchInlineQuery = b.SwitchInlineQuery;
-	this->SwitchInlineQueryCurrentChat = b.SwitchInlineQueryCurrentChat;
-	this->Pay = b.Pay;
+	Text = val->Text;
+	RequestContact = val->Text;
+	RequestLocation = val->RequestLocation;
 }
 
-TGBOT_InlineKeyboardMarkup::TGBOT_InlineKeyboardMarkup(const TGBOT_InlineKeyboardMarkup& kb)
+TGBOT_KeyboardButton::TGBOT_KeyboardButton(const TGBOT_KeyboardButton &val)
 {
-	this->Init();
-	this->CurrentRow = kb.CurrentRow;
-	for (int i = 0; i < 16; i++)
-	{
-		this->NumButtons[i] = kb.NumButtons[i];
-		for (int k = 0; k < 8; k++)
-		{
-			if (kb.Buttons[i][k] != NULL) this->Buttons[i][k] = new TGBOT_InlineKeyboardButton(*kb.Buttons[i][k]);
-		}
-	}
+	Text = val.Text;
+	RequestContact = val.Text;
+	RequestLocation = val.RequestLocation;
 }
 
-SMAnsiString TGBOT_ReplyKeyboardMarkup::ToJSON()
+TGBOT_InlineKeyboardButton::TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton *b)
 {
-	SMAnsiString resize_keyboard(this->ResizeKeyboard),
-	             one_time_keyboard(this->OneTimeKeyboard),
-	             selective(this->Selective);
-
-	SMAnsiString ret("{\"keyboard\":[");
-	for (int i = 0; i <= this->CurrentRow; i++)
-	{
-		if (this->NumButtons[i] == 0) break;
-		if(i) ret += ",";
-		ret += "[";
-		for (int j = 0; j < this->NumButtons[i]; j++)
-		{
-			if (j) ret += ",";
-			ret += SMAnsiString::smprintf("{\"text\":\"%s\"}", C_STR(this->Buttons[i][j]->Text));
-		}
-		ret += "]";
-	}
-	ret += SMAnsiString::smprintf("],\"resize_keyboard\":%s,\"one_time_keyboard\":%s,\"selective\":%s}", C_STR(resize_keyboard), C_STR(one_time_keyboard), C_STR(selective));
-	return std::move(ret);
+	Text = b->Text;
+	Url = b->Url;
+	CallbackData = b->CallbackData;
+	SwitchInlineQuery = b->SwitchInlineQuery;
+	SwitchInlineQueryCurrentChat = b->SwitchInlineQueryCurrentChat;
+	Pay = b->Pay;
 }
 
-SMAnsiString TGBOT_InlineKeyboardMarkup::ToJSON()
+TGBOT_InlineKeyboardButton::TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton &b)
 {
-	SMAnsiString ret("{\"inline_keyboard\":[");
-	for (int i = 0; i <= this->CurrentRow; i++)
-	{
-		if (this->NumButtons[i] == 0) break;
-		if (i) ret += ",";
-		ret += "[";
-		for (int j = 0; j < this->NumButtons[i]; j++)
-		{
-			if (j) ret += ",";
-			ret += this->Buttons[i][j]->ToJSON();
-		}
-		ret += "]";
-	}
-	ret += "]}";
-	return std::move(ret);
+	Text = b.Text;
+	Url = b.Url;
+	CallbackData = b.CallbackData;
+	SwitchInlineQuery = b.SwitchInlineQuery;
+	SwitchInlineQueryCurrentChat = b.SwitchInlineQueryCurrentChat;
+	Pay = b.Pay;
 }
 
 void tgbot_answerCallbackQuery(const SMAnsiString &CallbackQueryID)

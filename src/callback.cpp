@@ -93,12 +93,14 @@ bool RegisterCallbackData(const StringList &callback, const std::vector<StringLi
 static SMAnsiString GetPressedBtnCaption(const TGBOT_CallbackQuery* RecvCallback)
 {
 	const TGBOT_InlineKeyboardMarkup* kb = RecvCallback->Message->ReplyMarkup;
-	for (int i = 0; i <= kb->CurrentRow; i++)
+	const size_t numrow = kb->InlineKeyboard.size();
+	for (size_t i = 0; i < numrow; i++)
 	{
-		for (int j = 0; j < kb->NumButtons[i]; j++)
+		const size_t numbtn = kb->InlineKeyboard.at(i).size();
+		for (size_t j = 0; j < numbtn; j++)
 		{
-			if (kb->Buttons[i][j]->CallbackData == RecvCallback->Data)
-				return kb->Buttons[i][j]->Text;
+			if (kb->InlineKeyboard[i][j]->CallbackData == RecvCallback->Data)
+				return kb->InlineKeyboard[i][j]->Text;
 		}
 	}
 	return SMAnsiString();

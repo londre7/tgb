@@ -106,7 +106,7 @@ void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *R
 
 	// параметры для callback
 	StringList valuesAbout = { "param" };
-	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb(MakeInlineKeyboardFromDef(kb_start, { nullptr,&valuesAbout }));
+	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb_cmd(MakeInlineKeyboardFromDef(kb_start, { nullptr,&valuesAbout }));
 	#endif
 
 	TGBOT_ReplyKeyboardMarkup kb_cmd(true, false, true);
