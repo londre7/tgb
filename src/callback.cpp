@@ -4,14 +4,15 @@
 struct
 {
 	const char *token;
-	void (*proc)(const DB_User&, TGBOT_User*, TGBOT_Message*, const SMAnsiString&, const StringList&);
+	void (*proc)(DB_User&, TGBOT_User*, TGBOT_Message*, const SMAnsiString&, const StringList&);
 	const StringList *paramDef;
 } 
 CallbackDef[] =
 {
 	// callback_data                  обработчик                           параметры для обработки callback    
-	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        NULL                     },
-	{ CALLBACK_ABOUT,                 cq_processing_about,                 &CallbackParamsDef_About },
+	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        nullptr },
+	{ CALLBACK_CMDLIST,               cq_processing_cmdlist,               nullptr },
+	{ CALLBACK_FIND,                  cq_processing_find,                  nullptr },
 };
 
 // параметры для callback'ов
@@ -106,7 +107,7 @@ static SMAnsiString GetPressedBtnCaption(const TGBOT_CallbackQuery* RecvCallback
 	return SMAnsiString();
 }
 
-void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, const DB_User &dbusrinfo)
+void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 {
 	const SMAnsiString &callback_token = RecvCallback->Data;
 	const SMAnsiString callback_id = callback_token.Delete(32, callback_token.length());
@@ -187,14 +188,19 @@ void cq_processing_private_policy(CQ_PROCESSING_PARAMS)
 	tgbot_SendMessage(From->Id, BOTMSG_PRIVATE_POLICY);
 }
 
-void cq_processing_about(CQ_PROCESSING_PARAMS)
+void cq_processing_cmdlist(CQ_PROCESSING_PARAMS)
 {
 	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
+	sc_processing_cmdlist(dbusrinfo, From, Message->Chat, nullptr, Message->Message_Id);
 
 	// образец как достать параметры
-	const char *chapter = Params.at(0).c_str();
+	//const char *chapter = Params.at(0).c_str();
+}
 
-	tgbot_SendMessage(From->Id, chapter);
+void cq_processing_find(CQ_PROCESSING_PARAMS)
+{
+	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
+	sc_processing_find(dbusrinfo, From, Message->Chat, nullptr, Message->Message_Id);
 }
 
 #undef CHECK_USRSTATE

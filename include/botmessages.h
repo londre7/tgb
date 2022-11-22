@@ -72,10 +72,11 @@
 
 // названия INLINE кнопок
 #define INLINEBTN_CAPTION_PRIVATE_POLICY  "Политика конфиденциальности"
-#define INLINEBTN_CAPTION_ABOUT           "About"
+#define INLINEBTN_CAPTION_CMDLIST         "Список команд"
+#define INLINEBTN_CAPTION_FIND            "✈️ Искать"
 
 // названия REPLY кнопок
-#define REPLYBTN_CAPTION_FIND             "✈️ Искать"
+#define REPLYBTN_CAPTION_FIND             INLINEBTN_CAPTION_FIND
 #define REPLYBTN_CAPTION_CANCEL           "🚫 Отмена"
 #define REPLYBTN_CAPTION_STOP             "⛔ Завершить"
 

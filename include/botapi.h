@@ -124,14 +124,14 @@ inline void GetValueFromJSON(json_t* JEntry, const char *json_fld, type &struct_
 		struct_fld = json_type_func(JObj);                                                 \
 	}                                                                                      \
 }
-GetStdValueFromJSON(long long, json_integer_value);
-GetStdValueFromJSON(int, jsonint_to_int<int>);
-GetStdValueFromJSON(uint64_t, jsonint_to_int<uint64_t>);
-GetStdValueFromJSON(SMAnsiString, json_string_value);
-GetStdValueFromJSON(double, json_real_value);
-GetStdValueFromJSON(bool, json_boolean_value);
+GetStdValueFromJSON(long long,    json_integer_value      );
+GetStdValueFromJSON(int,          jsonint_to_int<int>     );
+GetStdValueFromJSON(uint64_t,     jsonint_to_int<uint64_t>);
+GetStdValueFromJSON(SMAnsiString, json_string_value       );
+GetStdValueFromJSON(double,       json_real_value         );
+GetStdValueFromJSON(bool,         json_boolean_value      );
 #ifdef __GNUG__
-GetStdValueFromJSON(time_t, jsonint_to_int<time_t>);
+GetStdValueFromJSON(time_t,       jsonint_to_int<time_t>  );
 #endif
 
 static inline void DoStartStream(SMAnsiString& s)
@@ -203,31 +203,64 @@ PutStdValueToJSON(SMAnsiString, false);
 PutStdValueToJSON(double,       true );
 PutStdValueToJSON(bool,         true );
 #ifdef __GNUG__
-PutStdValueToJSON(time_t,        true);
+PutStdValueToJSON(time_t,       true );
 #endif
 
+#define ADD_CONSTRUCTORS(clsname)                                              \
+clsname() { this->InitAll(); }                                                 \
+clsname(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); }
+#define ADD_DESTRUCTORS(clsname) ~clsname() { this->FreeAll(); }
+#define RESET_INT(val)       val=0
+#define RESET_UINT(val)      val=0u
+#define RESET_LONGLONG(val)  val=0ll
+#define RESET_ULONGLONG(val) val=0ull
+#define RESET_BOOL(val)      val=false
+#define RESET_DOUBLE(val)    val=0.0f
+#define RESET_PTR(val)       val=nullptr
+
 // Основные примитивы Telegram API
-class TGBOT_PhotoSize
+class TGBOT_API_Class
+{
+	public:
+		virtual void InitAll() = 0;
+		virtual void FreeAll() = 0;
+		// json serialize methods
+		virtual void FromJSON(json_t* ObjectEntry) = 0;
+		virtual SMAnsiString ToJSON() = 0;
+};
+
+class TGBOT_PhotoSize : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString FileId,
-					 FileUniqueId;
+		             FileUniqueId;
 		int          Width,
-					 Height;
+		             Height;
 		long long    FileSize;
 
-		TGBOT_PhotoSize() {}
-		TGBOT_PhotoSize(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_PhotoSize)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Width);
+			RESET_INT(Height);
+			RESET_LONGLONG(FileSize);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
 			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
 			GetValueFromJSON(ObjectEntry, "width",          Width       );
 			GetValueFromJSON(ObjectEntry, "height",         Height      );
 			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "file_id",        FileId      );
@@ -239,25 +272,97 @@ class TGBOT_PhotoSize
 		}
 };
 
-class TGBOT_MaskPosition
+class TGBOT_Animation : public TGBOT_API_Class
+{
+	SMAnsiString    FileId;
+	SMAnsiString    FileUniqueId;
+	int             Width;
+	int             Height;
+	int             Duration;
+	TGBOT_PhotoSize *Thumb;
+	SMAnsiString    FileName;
+	SMAnsiString    MimeType;
+	long long       FileSize;
+
+	ADD_CONSTRUCTORS(TGBOT_Animation)
+	ADD_DESTRUCTORS(TGBOT_Animation)
+
+	virtual void InitAll()
+	{
+		CLEAR_STR(FileId);
+		CLEAR_STR(FileUniqueId);
+		RESET_INT(Width);
+		RESET_INT(Height);
+		RESET_INT(Duration);
+		RESET_PTR(Thumb);
+		CLEAR_STR(FileName);
+		CLEAR_STR(MimeType);
+		RESET_LONGLONG(FileSize);
+	}
+	virtual void FreeAll()
+	{
+		DELETE_SINGLE_OBJECT(Thumb);
+	}
+
+	virtual void FromJSON(json_t* ObjectEntry)
+	{
+		FreeAll();
+		InitAll();
+		GetValueFromJSON(ObjectEntry, "file_id",        FileId);
+		GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+		GetValueFromJSON(ObjectEntry, "width",          Width);
+		GetValueFromJSON(ObjectEntry, "height",         Height);
+		GetValueFromJSON(ObjectEntry, "duration",       Duration);
+		GetValueFromJSON(ObjectEntry, "thumb",          Thumb);
+		GetValueFromJSON(ObjectEntry, "file_name",      FileName);
+		GetValueFromJSON(ObjectEntry, "mime_type",      MimeType);
+		GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
+	}
+	virtual SMAnsiString ToJSON()
+	{
+		SMAnsiString ostream;
+		PutValueToJSON(ostream, "file_id",        FileId);
+		PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+		PutValueToJSON(ostream, "width",          Width);
+		PutValueToJSON(ostream, "height",         Height);
+		PutValueToJSON(ostream, "duration",       Duration);
+		PutValueToJSON(ostream, "thumb",          Thumb);
+		PutValueToJSON(ostream, "file_name",      FileName);
+		PutValueToJSON(ostream, "mime_type",      MimeType);
+		PutValueToJSON(ostream, "file_size",      FileSize);
+		return std::move(ostream);
+	}
+};
+
+class TGBOT_MaskPosition : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString Point;
 		double       XShift,
-					 YShift,
-					 Scale;
+		             YShift,
+		             Scale;
 
-		TGBOT_MaskPosition() {}
-		TGBOT_MaskPosition(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_MaskPosition)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			CLEAR_STR(Point);
+			RESET_DOUBLE(XShift);
+			RESET_DOUBLE(YShift);
+			RESET_DOUBLE(Scale);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "point",   Point );
 			GetValueFromJSON(ObjectEntry, "x_shift", XShift);
 			GetValueFromJSON(ObjectEntry, "y_shift", YShift);
 			GetValueFromJSON(ObjectEntry, "scale",   Scale );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "point",   Point );
@@ -268,22 +373,35 @@ class TGBOT_MaskPosition
 		}
 }; 
 
-class TGBOT_User
+class TGBOT_User : public TGBOT_API_Class
 {
 	public:
 		uint64_t     Id;
 		bool         Is_Bot;
 		bool         IsPremium;
 		SMAnsiString FirstName,
-					 LastName,
-					 Username,
-					 LanguageCode;
+		             LastName,
+		             Username,
+		             LanguageCode;
 
-		TGBOT_User() {}
-		TGBOT_User(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_User)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			RESET_ULONGLONG(Id);
+			RESET_BOOL(Is_Bot);
+			RESET_BOOL(IsPremium);
+			CLEAR_STR(FirstName);
+			CLEAR_STR(LastName);
+			CLEAR_STR(Username);
+			CLEAR_STR(LanguageCode);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "id",            Id          );
 			GetValueFromJSON(ObjectEntry, "is_bot",        Is_Bot      );
 			GetValueFromJSON(ObjectEntry, "first_name",    FirstName   );
@@ -292,7 +410,7 @@ class TGBOT_User
 			GetValueFromJSON(ObjectEntry, "language_code", LanguageCode);
 			GetValueFromJSON(ObjectEntry, "is_premium",    IsPremium   );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",            Id          );
@@ -306,7 +424,62 @@ class TGBOT_User
 		}
 };
 
-class TGBOT_Sticker
+class TGBOT_MessageEntity : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Type;
+		long long    Offset;
+		long long    Length;
+		SMAnsiString Url;
+		TGBOT_User   *User;
+		SMAnsiString Language;
+		SMAnsiString CustomEmojiId;
+
+		ADD_CONSTRUCTORS(TGBOT_MessageEntity)
+		ADD_DESTRUCTORS(TGBOT_MessageEntity)
+
+		virtual void InitAll()
+		{
+			CLEAR_STR(Type);
+			RESET_LONGLONG(Offset);
+			RESET_LONGLONG(Length);
+			CLEAR_STR(Url);
+			RESET_PTR(User);
+			CLEAR_STR(Language);
+			CLEAR_STR(CustomEmojiId);
+		}
+		virtual void FreeAll()
+		{
+			DELETE_SINGLE_OBJECT(User);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON (ObjectEntry, "type",            Type);
+			GetValueFromJSON (ObjectEntry, "offset",          Offset);
+			GetValueFromJSON (ObjectEntry, "length",          Length);
+			GetValueFromJSON (ObjectEntry, "url",             Url);
+			GetValueFromJSON (ObjectEntry, "user",            User);
+			GetValueFromJSON (ObjectEntry, "language",        Language);
+			GetValueFromJSON (ObjectEntry, "custom_emoji_id", CustomEmojiId);
+		}
+		virtual SMAnsiString ToJSON()
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "type",            Type);
+			PutValueToJSON(ostream, "offset",          Offset);
+			PutValueToJSON(ostream, "length",          Length);
+			PutValueToJSON(ostream, "url",             Url);
+			PutValueToJSON(ostream, "user",            User);
+			PutValueToJSON(ostream, "language",        Language);
+			PutValueToJSON(ostream, "custom_emoji_id", CustomEmojiId);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Sticker : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString        FileId,
@@ -320,23 +493,32 @@ class TGBOT_Sticker
 		TGBOT_MaskPosition* MaskPosition;
 		long long           FileSize;
 
-		TGBOT_Sticker() { this->InitAll(); }
-		TGBOT_Sticker(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); }
-		~TGBOT_Sticker() { this->FreeAll(); }
+		ADD_CONSTRUCTORS(TGBOT_Sticker)
+		ADD_DESTRUCTORS(TGBOT_Sticker)
 
-		void FreeAll()
+		virtual void FreeAll()
 		{
 			DELETE_SINGLE_OBJECT(this->Thumb);
 			DELETE_SINGLE_OBJECT(this->MaskPosition);
 		}
-		void InitAll()
+		virtual void InitAll()
 		{
-			this->Thumb = NULL;
-			this->MaskPosition = NULL;
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Width);
+			RESET_INT(Height);
+			RESET_BOOL(IsAnimated);
+			CLEAR_STR(Emoji);
+			CLEAR_STR(SetName);
+			RESET_LONGLONG(FileSize);
+			RESET_PTR(Thumb);
+			RESET_PTR(MaskPosition);
 		}
-		void FromJSON(json_t* ObjectEntry)
+
+		virtual void FromJSON(json_t* ObjectEntry)
 		{
-			this->FreeAll();
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "file_id",        FileId);
 			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
 			GetValueFromJSON(ObjectEntry, "width",          Width);
@@ -348,7 +530,7 @@ class TGBOT_Sticker
 			GetValueFromJSON(ObjectEntry, "mask_position",  MaskPosition);
 			GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "file_id",        FileId);
@@ -365,32 +547,40 @@ class TGBOT_Sticker
 		}
 };
 
-class TGBOT_StickerSet
+class TGBOT_StickerSet : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString               Name,
-					               Title;
+		                           Title;
 		bool                       IsAnimated,
-					               ContainsMasks;
+		                           ContainsMasks;
 		TGBOT_ARRAY(TGBOT_Sticker) Stickers;
 
-		TGBOT_StickerSet() {}
-		TGBOT_StickerSet(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_StickerSet)
 
-		void FreeAll()
+		virtual void InitAll()
+		{
+			CLEAR_STR(Name);
+			CLEAR_STR(Title);
+			RESET_BOOL(IsAnimated);
+			RESET_BOOL(ContainsMasks);
+		}
+		virtual void FreeAll()
 		{
 			Stickers.clear();
 		}
-		void FromJSON(json_t * ObjectEntry)
+
+		virtual void FromJSON(json_t * ObjectEntry)
 		{
-			this->FreeAll();
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "name",           Name          );
 			GetValueFromJSON(ObjectEntry, "title",          Title         );
 			GetValueFromJSON(ObjectEntry, "is_animated",    IsAnimated    );
 			GetValueFromJSON(ObjectEntry, "contains_masks", ContainsMasks );
 			GetArrayFromJSON(ObjectEntry, "stickers",       Stickers      );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "name",           Name          );
@@ -402,7 +592,7 @@ class TGBOT_StickerSet
 		}
 };
 
-class TGBOT_Chat
+class TGBOT_Chat : public TGBOT_API_Class
 {
 	public:
 		uint64_t     Id;
@@ -412,11 +602,23 @@ class TGBOT_Chat
 		SMAnsiString FirstName;
 		SMAnsiString LastName;
 
-		TGBOT_Chat() {}
-		TGBOT_Chat(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_Chat)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			RESET_ULONGLONG(Id);
+			CLEAR_STR(Type);
+			CLEAR_STR(Title);
+			CLEAR_STR(Username);
+			CLEAR_STR(FirstName);
+			CLEAR_STR(LastName);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "id",         Id       );
 			GetValueFromJSON(ObjectEntry, "type",       Type     );
 			GetValueFromJSON(ObjectEntry, "title",      Title    );
@@ -424,7 +626,7 @@ class TGBOT_Chat
 			GetValueFromJSON(ObjectEntry, "last_name",  FirstName);
 			GetValueFromJSON(ObjectEntry, "username",   LastName );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",         Id       );
@@ -437,7 +639,7 @@ class TGBOT_Chat
 		}
 };
 
-class TGBOT_Contact
+class TGBOT_Contact : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString PhoneNumber,
@@ -446,18 +648,29 @@ class TGBOT_Contact
 		uint64_t     UserId;
 		SMAnsiString Vcard;
 
-		TGBOT_Contact() {}
-		TGBOT_Contact(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_Contact)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			CLEAR_STR(PhoneNumber);
+			CLEAR_STR(FirstName);
+			CLEAR_STR(LastName);
+			RESET_ULONGLONG(UserId);
+			CLEAR_STR(Vcard);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "phone_number",  PhoneNumber);
 			GetValueFromJSON(ObjectEntry, "first_name",    FirstName  );
 			GetValueFromJSON(ObjectEntry, "last_name",     LastName   );
 			GetValueFromJSON(ObjectEntry, "user_id",       UserId     );
 			GetValueFromJSON(ObjectEntry, "vcard",         Vcard      );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "phone_number",  PhoneNumber);
@@ -469,36 +682,35 @@ class TGBOT_Contact
 		}
 };
 
-class TGBOT_KeyboardButton
+class TGBOT_KeyboardButton : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString Text;
 		bool         RequestContact,
 		             RequestLocation;
 
-		TGBOT_KeyboardButton() {}
+		ADD_CONSTRUCTORS(TGBOT_KeyboardButton)
 		TGBOT_KeyboardButton(const TGBOT_KeyboardButton &val);
 		TGBOT_KeyboardButton(const TGBOT_KeyboardButton *val);
-		TGBOT_KeyboardButton(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
-		TGBOT_KeyboardButton(SMAnsiString Text, bool RequestContact, bool RequestLocation)
-		{
-			Init(Text, RequestContact, RequestLocation);
-		}
+		TGBOT_KeyboardButton(SMAnsiString Text, bool RequestContact, bool RequestLocation);
 
-		void Init(SMAnsiString Text, bool RequestContact, bool RequestLocation)
+		virtual void InitAll()
 		{
-			this->Text = Text;
-			this->RequestContact = RequestContact;
-			this->RequestLocation = RequestLocation;
+			CLEAR_STR(Text);
+			RESET_BOOL(RequestContact);
+			RESET_BOOL(RequestLocation);
 		}
+		virtual void FreeAll() {}
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry)
 		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "text",             Text           );
 			GetValueFromJSON(ObjectEntry, "request_contact",  RequestContact );
 			GetValueFromJSON(ObjectEntry, "request_location", RequestLocation);
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "text",             Text           );
@@ -508,7 +720,7 @@ class TGBOT_KeyboardButton
 		}
 };
 
-class TGBOT_InlineKeyboardButton
+class TGBOT_InlineKeyboardButton : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString Text;
@@ -518,24 +730,30 @@ class TGBOT_InlineKeyboardButton
 		SMAnsiString SwitchInlineQueryCurrentChat;
 		bool         Pay;
 
-		TGBOT_InlineKeyboardButton() { Init("inline_button", "", "", false); }
+		ADD_CONSTRUCTORS(TGBOT_InlineKeyboardButton)
 		TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton *b);
 		TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton &b);
-		TGBOT_InlineKeyboardButton(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
-		TGBOT_InlineKeyboardButton(SMAnsiString Text) { Init(Text, "", "", false); }
-		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString Url) { Init(Text, Url, "", false); }
-		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay) { Init(Text, "", CallbackData, Pay); }
+		TGBOT_InlineKeyboardButton(SMAnsiString Text) { CustomInit(Text, "", "", false); }
+		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString Url) { CustomInit(Text, Url, "", false); }
+		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay) { CustomInit(Text, "", CallbackData, Pay); }
 
-		void Init(SMAnsiString Text, SMAnsiString Url, SMAnsiString CallbackData, bool Pay)
+		virtual void InitAll()
 		{
-			this->Text = Text;
-			this->CallbackData = CallbackData;
-			this->Url = Url;
-			this->Pay = Pay;
+			CLEAR_STR(Text);
+			CLEAR_STR(Url);
+			CLEAR_STR(CallbackData);
+			CLEAR_STR(SwitchInlineQuery);
+			CLEAR_STR(SwitchInlineQueryCurrentChat);
+			RESET_BOOL(Pay);
 		}
+		virtual void FreeAll() {}
 
-		void FromJSON(json_t* ObjectEntry)
+		void CustomInit(SMAnsiString Text, SMAnsiString Url, SMAnsiString CallbackData, bool Pay);
+
+		virtual void FromJSON(json_t* ObjectEntry)
 		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "text",                             Text                        );
 			GetValueFromJSON(ObjectEntry, "url",                              Url                         );
 			GetValueFromJSON(ObjectEntry, "callback_data",                    CallbackData                );
@@ -543,7 +761,7 @@ class TGBOT_InlineKeyboardButton
 			GetValueFromJSON(ObjectEntry, "switch_inline_query_current_chat", SwitchInlineQueryCurrentChat);
 			GetValueFromJSON(ObjectEntry, "pay",                              Pay                         );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "text",                             Text                        );
@@ -556,12 +774,10 @@ class TGBOT_InlineKeyboardButton
 		}
 };
 
-class TGBOT_Keyboard
+class TGBOT_Keyboard : public TGBOT_API_Class
 {
 	public:
 		virtual ~TGBOT_Keyboard() {}
-		virtual SMAnsiString ToJSON() = 0;
-		virtual void FromJSON(json_t* ObjectEntry) = 0;
 };
 
 class TGBOT_ReplyKeyboardMarkup: public TGBOT_Keyboard
@@ -573,25 +789,25 @@ class TGBOT_ReplyKeyboardMarkup: public TGBOT_Keyboard
 		                                           Selective;
 
 	public:
-		TGBOT_ReplyKeyboardMarkup() { Init(true, false, false, false); }
-		TGBOT_ReplyKeyboardMarkup(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective) { Init(ResizeKeyboard, OneTimeKeyboard, Selective, false); }
+		ADD_CONSTRUCTORS(TGBOT_ReplyKeyboardMarkup)
+		TGBOT_ReplyKeyboardMarkup(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective) { CustomInit(ResizeKeyboard, OneTimeKeyboard, Selective, false); }
 
-		void Init(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective, bool freemem=true)
+		virtual void InitAll()
 		{
-			Keyboard.clear();
-			this->ResizeKeyboard = ResizeKeyboard;
-			this->OneTimeKeyboard = OneTimeKeyboard;
-			this->Selective = Selective;
+			RESET_BOOL(ResizeKeyboard);
+			RESET_BOOL(OneTimeKeyboard);
+			RESET_BOOL(Selective);
 		}
+		virtual void FreeAll() { Keyboard.clear(); }
 
-		void CreateButton(SMAnsiString Text)
-		{
-			Keyboard.push_back(new TGBOT_KeyboardButton(Text, false, false));
-		}
+		void CustomInit(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective, bool freemem = true);
+		void CreateButton(SMAnsiString Text);
 		void CreateRow() { Keyboard.CreateRow(); }
-	
+
 		virtual void FromJSON(json_t* ObjectEntry)
 		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON       (ObjectEntry, "resize_keyboard",   ResizeKeyboard );
 			GetValueFromJSON       (ObjectEntry, "one_time_keyboard", OneTimeKeyboard);
 			GetValueFromJSON       (ObjectEntry, "selective",         Selective      );
@@ -613,28 +829,21 @@ class TGBOT_InlineKeyboardMarkup: public TGBOT_Keyboard
 	public:
 		TGBOT_ARRAY_OF_ARRAY<TGBOT_InlineKeyboardButton> InlineKeyboard;
 
-		TGBOT_InlineKeyboardMarkup() {}
+		ADD_CONSTRUCTORS(TGBOT_InlineKeyboardMarkup)
 		TGBOT_InlineKeyboardMarkup(const TGBOT_InlineKeyboardMarkup& kb) { InlineKeyboard = kb.InlineKeyboard; }
-		TGBOT_InlineKeyboardMarkup(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
 
-		void Init() { InlineKeyboard.clear(); }
+		virtual void InitAll() {}
+		virtual void FreeAll() { InlineKeyboard.clear(); }
 
-		void CreateButton(SMAnsiString Text)
-		{
-			InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text));
-		}
-		void CreateButton(SMAnsiString Text, SMAnsiString Url)
-		{
-			InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, Url));
-		}
-		void CreateButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay)
-		{
-			InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, CallbackData, Pay));
-		}
+		void CreateButton(SMAnsiString Text) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text)); }
+		void CreateButton(SMAnsiString Text, SMAnsiString Url) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, Url)); }
+		void CreateButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, CallbackData, Pay)); }
 		void CreateRow() { InlineKeyboard.CreateRow(); }
 
 		virtual void FromJSON(json_t * ObjectEntry)
 		{
+			FreeAll();
+			InitAll();
 			GetArrayOfArrayFromJSON(ObjectEntry, "inline_keyboard", InlineKeyboard);
 		}
 		virtual SMAnsiString ToJSON()
@@ -645,21 +854,29 @@ class TGBOT_InlineKeyboardMarkup: public TGBOT_Keyboard
 		}
 };
 
-class TGBOT_ForceReply
+class TGBOT_ForceReply : public TGBOT_API_Class
 {
 	public:
 		bool ForceReply,
 		     Selective;
 
-		TGBOT_ForceReply() {}
-		TGBOT_ForceReply(json_t* ObjectEntry) { this->FromJSON(ObjectEntry); }
+		ADD_CONSTRUCTORS(TGBOT_ForceReply)
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void InitAll()
 		{
+			RESET_BOOL(ForceReply);
+			RESET_BOOL(Selective);
+		}
+		virtual void FreeAll() {}
+
+		virtual void FromJSON(json_t* ObjectEntry)
+		{
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "force_reply", ForceReply);
 			GetValueFromJSON(ObjectEntry, "selective",   Selective );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "force_reply", ForceReply);
@@ -668,7 +885,7 @@ class TGBOT_ForceReply
 		}
 };
 
-class TGBOT_Message
+class TGBOT_Message : public TGBOT_API_Class
 {
 	public:
 		uint64_t                     Message_Id;
@@ -690,6 +907,7 @@ class TGBOT_Message
 		SMAnsiString                 MediaGroupId;
 		SMAnsiString                 AuthorSignature;
 		SMAnsiString                 Text;
+		TGBOT_ARRAY(TGBOT_MessageEntity) Entities;
 		TGBOT_ARRAY(TGBOT_PhotoSize) Photo;
 		TGBOT_Sticker*               Sticker;
 		SMAnsiString                 Caption;
@@ -701,12 +919,44 @@ class TGBOT_Message
 		bool                         ChannelChatCreated;
 		TGBOT_InlineKeyboardMarkup*  ReplyMarkup;
 
-		TGBOT_Message() { this->InitAll(); }
-		TGBOT_Message(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); }
-		~TGBOT_Message() { this->FreeAll(); }
+		ADD_CONSTRUCTORS(TGBOT_Message)
+		ADD_DESTRUCTORS(TGBOT_Message)
 
-		void FreeAll()
+		virtual void InitAll()
 		{
+			RESET_ULONGLONG(Message_Id);
+			RESET_ULONGLONG(MessageThreadId);
+			RESET_PTR(From);
+			RESET_INT(Date);
+			RESET_PTR(Chat);
+			RESET_PTR(ForwardFrom);
+			RESET_PTR(ForwardFromChat);
+			RESET_ULONGLONG(ForwardFromMessageId);
+			CLEAR_STR(ForwardSignature);
+			CLEAR_STR(ForwardSenderName);
+			RESET_INT(ForwardDate);
+			RESET_BOOL(IsTopicMessage);
+			RESET_BOOL(IsAutomaticForward);
+			RESET_PTR(ReplyToMessage);
+			RESET_INT(EditDate);
+			RESET_BOOL(HasProtectedContent);
+			CLEAR_STR(MediaGroupId);
+			CLEAR_STR(AuthorSignature);
+			CLEAR_STR(Text);
+			RESET_PTR(Sticker);
+			CLEAR_STR(Caption);
+			RESET_PTR(Contact);
+			CLEAR_STR(NewChatTitle);
+			RESET_BOOL(DeleteChatPhoto);
+			RESET_BOOL(GroupChatCreated);
+			RESET_BOOL(SupergroupChatCreated);
+			RESET_BOOL(ChannelChatCreated);
+			RESET_PTR(ReplyMarkup);
+		}
+		virtual void FreeAll()
+		{
+			Entities.clear();
+			Photo.clear();
 			DELETE_SINGLE_OBJECT(this->Chat);
 			DELETE_SINGLE_OBJECT(this->ForwardFrom);
 			DELETE_SINGLE_OBJECT(this->ForwardFromChat);
@@ -716,29 +966,11 @@ class TGBOT_Message
 			DELETE_SINGLE_OBJECT(this->Sticker);
 			DELETE_SINGLE_OBJECT(this->ReplyMarkup);
 		}
-		void InitAll()
+		
+		virtual void FromJSON(json_t *ObjectEntry)
 		{
-			IsTopicMessage = false;
-			IsAutomaticForward = false;
-			HasProtectedContent = false;
-			DeleteChatPhoto = false;
-			GroupChatCreated = false;
-			SupergroupChatCreated = false;
-			ChannelChatCreated = false;
-
-			Photo.clear();
-			this->From = NULL;
-			this->Chat = NULL;
-			this->ForwardFrom = NULL;
-			this->ForwardFromChat = NULL;
-			this->ReplyToMessage = NULL;
-			this->Contact = NULL;
-			this->Sticker = NULL;
-			this->ReplyMarkup = NULL;
-		}
-		void FromJSON(json_t *ObjectEntry)
-		{
-			this->FreeAll();
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "message_id",              Message_Id           );
 			GetValueFromJSON(ObjectEntry, "message_thread_id",       MessageThreadId      );
 			GetValueFromJSON(ObjectEntry, "from",                    From                  );
@@ -758,54 +990,56 @@ class TGBOT_Message
 			GetValueFromJSON(ObjectEntry, "media_group_id",          MediaGroupId         );
 			GetValueFromJSON(ObjectEntry, "author_signature",        AuthorSignature      );
 			GetValueFromJSON(ObjectEntry, "text",                    Text                 );
+			GetArrayFromJSON(ObjectEntry, "entities",                Entities             );
 			GetArrayFromJSON(ObjectEntry, "photo",                   Photo                );
-			GetValueFromJSON(ObjectEntry, "sticker",                 Sticker               );
+			GetValueFromJSON(ObjectEntry, "sticker",                 Sticker              );
 			GetValueFromJSON(ObjectEntry, "caption",                 Caption              );
-			GetValueFromJSON(ObjectEntry, "contact",                 Contact               );
+			GetValueFromJSON(ObjectEntry, "contact",                 Contact              );
 			GetValueFromJSON(ObjectEntry, "new_chat_title",          NewChatTitle         );
 			GetValueFromJSON(ObjectEntry, "delete_chat_photo",       DeleteChatPhoto      );
 			GetValueFromJSON(ObjectEntry, "group_chat_created",      GroupChatCreated     );
 			GetValueFromJSON(ObjectEntry, "supergroup_chat_created", SupergroupChatCreated);
 			GetValueFromJSON(ObjectEntry, "channel_chat_created",    ChannelChatCreated   );
-			GetValueFromJSON(ObjectEntry, "reply_markup",            ReplyMarkup           );
+			GetValueFromJSON(ObjectEntry, "reply_markup",            ReplyMarkup          );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "message_id",              Message_Id           );
 			PutValueToJSON(ostream, "message_thread_id",       MessageThreadId      );
-			PutValueToJSON(ostream, "from",                    From                  );
+			PutValueToJSON(ostream, "from",                    From                 );
 			PutValueToJSON(ostream, "date",                    Date                 );
-			PutValueToJSON(ostream, "chat",                    Chat                  );
-			PutValueToJSON(ostream, "forward_from",            ForwardFrom           );
-			PutValueToJSON(ostream, "forward_from_chat",       ForwardFromChat       );
+			PutValueToJSON(ostream, "chat",                    Chat                 );
+			PutValueToJSON(ostream, "forward_from",            ForwardFrom          );
+			PutValueToJSON(ostream, "forward_from_chat",       ForwardFromChat      );
 			PutValueToJSON(ostream, "forward_from_message_id", ForwardFromMessageId );
 			PutValueToJSON(ostream, "forward_signature",       ForwardSignature     );
 			PutValueToJSON(ostream, "forward_sender_name",     ForwardSenderName    );
 			PutValueToJSON(ostream, "forward_date",            ForwardDate          );
 			PutValueToJSON(ostream, "is_topic_message",        IsTopicMessage       );
 			PutValueToJSON(ostream, "is_automatic_forward",    IsAutomaticForward   );
-			PutValueToJSON(ostream, "reply_to_message",        ReplyToMessage        );
+			PutValueToJSON(ostream, "reply_to_message",        ReplyToMessage       );
 			PutValueToJSON(ostream, "edit_date",               EditDate             );
 			PutValueToJSON(ostream, "has_protected_content",   HasProtectedContent  );
 			PutValueToJSON(ostream, "media_group_id",          MediaGroupId         );
 			PutValueToJSON(ostream, "author_signature",        AuthorSignature      );
 			PutValueToJSON(ostream, "text",                    Text                 );
+			PutArrayToJSON(ostream, "entities",                Entities             );
 			PutArrayToJSON(ostream, "photo",                   Photo                );
-			PutValueToJSON(ostream, "sticker",                 Sticker               );
+			PutValueToJSON(ostream, "sticker",                 Sticker              );
 			PutValueToJSON(ostream, "caption",                 Caption              );
-			PutValueToJSON(ostream, "contact",                 Contact               );
+			PutValueToJSON(ostream, "contact",                 Contact              );
 			PutValueToJSON(ostream, "new_chat_title",          NewChatTitle         );
 			PutValueToJSON(ostream, "delete_chat_photo",       DeleteChatPhoto      );
 			PutValueToJSON(ostream, "group_chat_created",      GroupChatCreated     );
 			PutValueToJSON(ostream, "supergroup_chat_created", SupergroupChatCreated);
 			PutValueToJSON(ostream, "channel_chat_created",    ChannelChatCreated   );
-			PutValueToJSON(ostream, "reply_markup",            ReplyMarkup           );
+			PutValueToJSON(ostream, "reply_markup",            ReplyMarkup          );
 			return std::move(ostream);
 		}
 };
 
-class TGBOT_CallbackQuery
+class TGBOT_CallbackQuery : public TGBOT_API_Class
 {
 	public:
 		SMAnsiString  Id;
@@ -816,24 +1050,29 @@ class TGBOT_CallbackQuery
 		              Data,
 		              GameShortName;
 
-		TGBOT_CallbackQuery() { this->InitAll(); }
-		TGBOT_CallbackQuery(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); }
-		~TGBOT_CallbackQuery() { this->FreeAll(); }
+		ADD_CONSTRUCTORS(TGBOT_CallbackQuery)
+		ADD_DESTRUCTORS(TGBOT_CallbackQuery)
 
-		void FreeAll()
+		virtual void InitAll()
+		{
+			CLEAR_STR(Id);
+			RESET_PTR(From);
+			RESET_PTR(Message);
+			CLEAR_STR(InlineMessageId);
+			CLEAR_STR(ChatInstance);
+			CLEAR_STR(Data);
+			CLEAR_STR(GameShortName);
+		}
+		virtual void FreeAll()
 		{
 			DELETE_SINGLE_OBJECT(this->From);
 			DELETE_SINGLE_OBJECT(this->Message);
 		}
-		void InitAll()
-		{
-			this->From = NULL;
-			this->Message = NULL;
-		}
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry)
 		{
-			this->FreeAll();
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "id",                Id);
 			GetValueFromJSON(ObjectEntry, "from",              From);
 			GetValueFromJSON(ObjectEntry, "message",           Message);
@@ -842,7 +1081,7 @@ class TGBOT_CallbackQuery
 			GetValueFromJSON(ObjectEntry, "data",              Data);
 			GetValueFromJSON(ObjectEntry, "game_short_name",   GameShortName);
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",                Id             );
@@ -856,7 +1095,7 @@ class TGBOT_CallbackQuery
 		}
 };
 
-class TGBOT_Update
+class TGBOT_Update : public TGBOT_API_Class
 {
 	public:
 		uint64_t            UpdateId;
@@ -866,11 +1105,19 @@ class TGBOT_Update
 		                    *EditedChannelPost;
 		TGBOT_CallbackQuery *CallbackQuery;
 
-		TGBOT_Update() { this->InitAll(); }
-		TGBOT_Update(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); }
-		~TGBOT_Update() { this->FreeAll(); }
+		ADD_CONSTRUCTORS(TGBOT_Update)
+		ADD_DESTRUCTORS(TGBOT_Update)
 
-		void FreeAll()
+		virtual void InitAll()
+		{
+			RESET_ULONGLONG(UpdateId);
+			RESET_PTR(Message);
+			RESET_PTR(EditedMessage);
+			RESET_PTR(ChannelPost);
+			RESET_PTR(EditedChannelPost);
+			RESET_PTR(CallbackQuery);
+		}
+		virtual void FreeAll()
 		{
 			DELETE_SINGLE_OBJECT(this->Message);
 			DELETE_SINGLE_OBJECT(this->EditedMessage);
@@ -878,20 +1125,11 @@ class TGBOT_Update
 			DELETE_SINGLE_OBJECT(this->EditedChannelPost);
 			DELETE_SINGLE_OBJECT(this->CallbackQuery);
 		}
-		void InitAll()
-		{
-			this->UpdateId = 0;
-			this->Message = NULL;
-			this->EditedMessage = NULL;
-			this->ChannelPost = NULL;
-			this->EditedChannelPost = NULL;
-			this->CallbackQuery = NULL;
-		}
 
-		void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry)
 		{
-			if (!ObjectEntry) return;
-			this->FreeAll();
+			FreeAll();
+			InitAll();
 			GetValueFromJSON(ObjectEntry, "update_id",           UpdateId        );
 			GetValueFromJSON(ObjectEntry, "message",             Message          );
 			GetValueFromJSON(ObjectEntry, "edited_message",      EditedMessage    );
@@ -899,7 +1137,7 @@ class TGBOT_Update
 			GetValueFromJSON(ObjectEntry, "edited_channel_post", EditedChannelPost);
 			GetValueFromJSON(ObjectEntry, "callback_query",      CallbackQuery    );
 		}
-		SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON()
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "update_id",           UpdateId        );

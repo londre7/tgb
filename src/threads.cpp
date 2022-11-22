@@ -120,7 +120,7 @@ void* FindThread::thrFunc(void* arg)
 				SEND_MSG_AND_CONTINUE(uid, BOTMSG_INTERNAL_ERROR);
 
 			// отправляем обоим сообщения
-			kb_cmd.Init(true, false, true);
+			kb_cmd.CustomInit(true, false, true);
 			kb_cmd.CreateButton(REPLYBTN_CAPTION_STOP);
 			tgbot_SendMessage(uid, BOTMSG_START_CHAT, &kb_cmd);
 			tgbot_SendMessage(recepient, BOTMSG_START_CHAT, &kb_cmd);

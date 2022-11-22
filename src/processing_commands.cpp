@@ -16,6 +16,7 @@ CmdDef[] =
 {
 	// команда           соотв. кнопка            обработчик                    необх. сост.   необходимые разрешения        флаг "И"  
 	{ "/start",          nullptr,                 sc_processing_start,          USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
+	{ "/cmdlist",        nullptr,                 sc_processing_cmdlist,        USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
 	{ "/find",           REPLYBTN_CAPTION_FIND,   sc_processing_find,           USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
 	{ "/cancel",         REPLYBTN_CAPTION_CANCEL, sc_processing_cancel,         USRSTATE_ALL,  DEFAULT_USER_PERMISIONS,      false },
 	{ "/stop",           REPLYBTN_CAPTION_STOP,   sc_processing_stop,           USRSTATE_CHAT, DEFAULT_USER_PERMISIONS,      false },
@@ -95,26 +96,37 @@ void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat 
 
 void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const StringList* Params, uint64_t MessageID)
 {
-	#if 0
 	// клавиатура, чисто для примера
-	static std::vector<InlineKeyboardDef> kb_start =
+	static const std::vector<InlineKeyboardDef> kb_start_decl =
 	{
 		{ INLINEBTN_CAPTION_PRIVATE_POLICY, CALLBACK_PRIVATE_POLICY, nullptr },
 		{ "#newrow",						nullptr,                 nullptr },
-		{ INLINEBTN_CAPTION_ABOUT,          CALLBACK_ABOUT,          &CallbackParamsDef_About }
+		{ INLINEBTN_CAPTION_CMDLIST,        CALLBACK_CMDLIST,        nullptr },
+		{ "#newrow",						nullptr,                 nullptr },
+		{ INLINEBTN_CAPTION_FIND,           CALLBACK_FIND,           nullptr }
 	};
 
+	#if 0
 	// параметры для callback
 	StringList valuesAbout = { "param" };
 	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb_cmd(MakeInlineKeyboardFromDef(kb_start, { nullptr,&valuesAbout }));
 	#endif
 
-	TGBOT_ReplyKeyboardMarkup kb_cmd(true, false, true);
-	kb_cmd.CreateButton(REPLYBTN_CAPTION_FIND);
+	std::unique_ptr<TGBOT_InlineKeyboardMarkup> kb_start(MakeInlineKeyboardFromDef(kb_start_decl, { nullptr,nullptr,nullptr,nullptr,nullptr }));
 
 	// посылаем сообщенние с клавой
 	SMAnsiString text = SMAnsiString::smprintf(BOTMSG_CMD_START, C_STR(MakeFullUserName(RecvUser)), STR_DONATIONS_REQUSITS);
-	tgbot_SendMessage(RecvChat->Id, text, &kb_cmd);
+	tgbot_SendMessage(RecvChat->Id, text, kb_start.get());
+}
+
+void sc_processing_cmdlist(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
+{
+	SMAnsiString helptext = "📜 <b>Список команд</b>:\n"
+	                        "<b>/cmdlist</b> - вывести список доступных команд;\n"
+	                        "<b>/find</b> - запуск поиска собеседника\n"
+		                    "<b>/cancel</b> - отменить поиск\n"
+	                        "<b>/stop</b> - завершить беседу";
+	SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, helptext, REPLYBTN_CAPTION_FIND);
 }
 
 void sc_processing_find(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)

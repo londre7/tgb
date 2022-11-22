@@ -14,6 +14,7 @@
 
 #define MSTRLEN(_str) (int)strlen(_str)
 #define C_STR(str) str.c_str()
+#define CLEAR_STR(str) str[0]='\0'
 
 inline int IsStrEmpty(const char* p) { return !(p && *p); } 
 

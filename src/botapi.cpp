@@ -90,6 +90,13 @@ TGBOT_KeyboardButton::TGBOT_KeyboardButton(const TGBOT_KeyboardButton &val)
 	RequestLocation = val.RequestLocation;
 }
 
+TGBOT_KeyboardButton::TGBOT_KeyboardButton(SMAnsiString Text, bool RequestContact, bool RequestLocation)
+{
+	this->Text = Text;
+	this->RequestContact = RequestContact;
+	this->RequestLocation = RequestLocation;
+}
+
 TGBOT_InlineKeyboardButton::TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboardButton *b)
 {
 	Text = b->Text;
@@ -108,6 +115,27 @@ TGBOT_InlineKeyboardButton::TGBOT_InlineKeyboardButton(const TGBOT_InlineKeyboar
 	SwitchInlineQuery = b.SwitchInlineQuery;
 	SwitchInlineQueryCurrentChat = b.SwitchInlineQueryCurrentChat;
 	Pay = b.Pay;
+}
+
+void TGBOT_InlineKeyboardButton::CustomInit(SMAnsiString Text, SMAnsiString Url, SMAnsiString CallbackData, bool Pay)
+{
+	this->Text = Text;
+	this->CallbackData = CallbackData;
+	this->Url = Url;
+	this->Pay = Pay;
+}
+
+void TGBOT_ReplyKeyboardMarkup::CustomInit(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective, bool freemem)
+{
+	Keyboard.clear();
+	this->ResizeKeyboard = ResizeKeyboard;
+	this->OneTimeKeyboard = OneTimeKeyboard;
+	this->Selective = Selective;
+}
+
+void TGBOT_ReplyKeyboardMarkup::CreateButton(SMAnsiString Text)
+{
+	Keyboard.push_back(new TGBOT_KeyboardButton(Text, false, false));
 }
 
 void tgbot_answerCallbackQuery(const SMAnsiString &CallbackQueryID)
