@@ -13,6 +13,7 @@ CallbackDef[] =
 	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        nullptr },
 	{ CALLBACK_CMDLIST,               cq_processing_cmdlist,               nullptr },
 	{ CALLBACK_FIND,                  cq_processing_find,                  nullptr },
+	{ CALLBACK_ID,                    cq_processing_id,                    nullptr },
 };
 
 // параметры для callback'ов
@@ -182,6 +183,22 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 #define CALLBACK_INIT_PARAMS(params_def) StringList *cpnames = params_def; StringList cpvalues
 #define CALLBACK_REINIT_PARAMS(params_def) cpnames = params_def; cpvalues.clear()
 
+// Telegram API в качестве сообщения передаёт сообщение, к которому привязана кнопка.
+// В связи с этим в обработчике команды в поле From будет передан бот, а не пользователь, который нажал кнопку.
+// Собсна этот хак нужен чтоб подменить бота на юзера, который нажал кнопку.
+// Т.е. если внутри обработчиков команд sc_processing_* есть обращения к From, то перед вызовом RunProcCmd
+// нужно вызвать этот хак
+static void DirtyHack(TGBOT_Message* msg, const TGBOT_User* from)
+{
+	msg->From->Id = from->Id;
+	msg->From->Is_Bot = from->Is_Bot;
+	msg->From->IsPremium = from->IsPremium;
+	msg->From->FirstName = from->FirstName;
+	msg->From->LastName = from->LastName;
+	msg->From->Username = from->Username;
+	msg->From->LanguageCode = from->LanguageCode;
+}
+
 void cq_processing_private_policy(CQ_PROCESSING_PARAMS)
 {
 	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
@@ -190,17 +207,19 @@ void cq_processing_private_policy(CQ_PROCESSING_PARAMS)
 
 void cq_processing_cmdlist(CQ_PROCESSING_PARAMS)
 {
-	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
-	sc_processing_cmdlist(dbusrinfo, From, Message->Chat, nullptr, Message->Message_Id);
-
+	RunProcCmd("/cmdlist", "", Message, dbusrinfo);
 	// образец как достать параметры
 	//const char *chapter = Params.at(0).c_str();
 }
 
 void cq_processing_find(CQ_PROCESSING_PARAMS)
 {
-	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
-	sc_processing_find(dbusrinfo, From, Message->Chat, nullptr, Message->Message_Id);
+	RunProcCmd("/find", "", Message, dbusrinfo);
+}
+
+void cq_processing_id(CQ_PROCESSING_PARAMS)
+{
+	RunProcCmd("/id", "", Message, dbusrinfo);
 }
 
 #undef CHECK_USRSTATE

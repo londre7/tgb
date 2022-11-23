@@ -5,7 +5,7 @@ static SMAnsiString MakeFullUserName(const SMAnsiString& lastname, const SMAnsiS
 	SMAnsiString fn;
 	if (!lastname.IsEmpty()) fn += (lastname + " ");
 	fn += firstname;
-	if (!username.IsEmpty()) fn += SMAnsiString::smprintf(" (%s)", C_STR(username));
+	if (!username.IsEmpty()) fn += SMAnsiString::smprintf(" (@%s)", C_STR(username));
 	return std::move(fn);
 }
 

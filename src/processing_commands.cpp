@@ -3,15 +3,7 @@
 
 // список команд и их обработчики
 typedef void (*cmd_proc_func)(DB_User&, TGBOT_User*, TGBOT_Chat*, const StringList*, uint64_t);
-struct Cmd
-{ 
-	const char* cmd;
-	const char* replybtn;
-	cmd_proc_func proc;
-	int usrstate;
-	uint64_t permission;
-	bool and_flag; // если true, доступ только когда все флажки из permission стоят у пользователя, если false - хотя бы один.
-} 
+struct Cmd { const char* cmd; const char* replybtn; cmd_proc_func proc; int usrstate; uint64_t permission; bool and_flag; } 
 CmdDef[] =
 {
 	// команда           соотв. кнопка            обработчик                    необх. сост.   необходимые разрешения        флаг "И"  
@@ -26,6 +18,8 @@ CmdDef[] =
 	{ "/getuserinfo",    nullptr,                 sc_processing_getuserinfo,    USRSTATE_FREE, FLAGS_0_1,                    false },
 	{ "/getnotify",      nullptr,                 sc_processing_getnotify,      USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
 	{ "/setnotify",      nullptr,                 sc_processing_setnotify,      USRSTATE_FREE, PERMISSION_MANAGE_USR_ACCESS, false },
+	{ "/id",             nullptr,                 sc_processing_id,             USRSTATE_FREE, DEFAULT_USER_PERMISIONS,      false },
+	{ "/sendmsg",        nullptr,                 sc_processing_sendmsg,        USRSTATE_FREE, PERMISSION_SENDMSG,           false },
 };
 
 static bool CheckUserPermission(uint64_t cmdPermissions, const DB_User &user, bool and_flag)
@@ -73,7 +67,7 @@ static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString &para
 
 	// выполняем команду
 	std::unique_ptr<StringList> params(ParseFormatString(param));
-	cmd.proc(dbusrinfo, message->From, message->Chat, params.get(), message->Message_Id);
+	cmd.proc(dbusrinfo, message->From, message->Chat, params.get(), message->MessageId);
 	return;
 }
 
@@ -86,7 +80,7 @@ void RunProcCmd(const SMAnsiString &cmd, const SMAnsiString &param, TGBOT_Messag
 			return run_cmd(command, dbusrinfo, param, message);
 	}
 	// неизвестная команда
-	sc_processing_unknown(dbusrinfo, message->From, message->Chat, param, message->Message_Id);
+	sc_processing_unknown(dbusrinfo, message->From, message->Chat, param, message->MessageId);
 }
 
 void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const SMAnsiString &Params, uint64_t MessageID)
@@ -96,14 +90,16 @@ void sc_processing_unknown(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat 
 
 void sc_processing_start(DB_User& dbusrinfo, TGBOT_User *RecvUser, TGBOT_Chat *RecvChat, const StringList* Params, uint64_t MessageID)
 {
-	// клавиатура, чисто для примера
+	// меню
 	static const std::vector<InlineKeyboardDef> kb_start_decl =
 	{
 		{ INLINEBTN_CAPTION_PRIVATE_POLICY, CALLBACK_PRIVATE_POLICY, nullptr },
-		{ "#newrow",						nullptr,                 nullptr },
+		{ "#newrow",                        nullptr,                 nullptr },
 		{ INLINEBTN_CAPTION_CMDLIST,        CALLBACK_CMDLIST,        nullptr },
-		{ "#newrow",						nullptr,                 nullptr },
-		{ INLINEBTN_CAPTION_FIND,           CALLBACK_FIND,           nullptr }
+		{ "#newrow",                        nullptr,                 nullptr },
+		{ INLINEBTN_CAPTION_ID,             CALLBACK_ID,             nullptr },
+		{ "#newrow",                        nullptr,                 nullptr },
+		{ INLINEBTN_CAPTION_FIND,           CALLBACK_FIND,           nullptr },
 	};
 
 	#if 0
@@ -170,6 +166,8 @@ void sc_processing_cancel(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* 
 		case USRSTATE_GETUSERINFO_INPUT_UID:
 		case USRSTATE_GETNOTIFY_INPUT_UID:
 		case USRSTATE_SETNOTIFY_INPUT_UID:
+		case USRSTATE_SENDMSG_INPUT_UID:
+		case USRSTATE_SENDMSG_INPUT_MSG:
 			RESET_STATE(dbusrinfo, RecvChat->Id, BOTMSG_CANCEL);
 			break;
 		default:
@@ -370,10 +368,21 @@ void sc_processing_setnotify(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Cha
 	proc_setflag_cmd(dbusrinfo.Notify, helpmsg, Params, RecvChat->Id, dbusrinfo, USRSTATE_SETNOTIFY_INPUT_UID);
 }
 
+void sc_processing_id(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
+{
+	SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, SMAnsiString::smprintf(BOTMSG_USER_ID, dbusrinfo.UID), REPLYBTN_CAPTION_FIND);
+}
+
+void sc_processing_sendmsg(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, const StringList* Params, uint64_t MessageID)
+{
+	SetUserState(dbusrinfo, USRSTATE_SENDMSG_INPUT_UID);
+	SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, BOTMSG_INPUT_UID, REPLYBTN_CAPTION_CANCEL);
+}
+
 void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* RecvChat, TGBOT_Message *message)
 {
 	const SMAnsiString &Message = message->Text;
-	uint64_t &MessageID = message->Message_Id;
+	uint64_t &MessageID = message->MessageId;
 
 	// обработка нажатия ReplyBtn
 	for (auto &cmd : CmdDef)
@@ -481,21 +490,44 @@ void fm_processing(DB_User& RecvUserInfo, TGBOT_User* RecvUser, TGBOT_Chat* Recv
 			}
 			break;
 		case USRSTATE_GETPERMISSION_INPUT_UID:
-			{
-				StringList params = { Message };
-				RUN_CMD(sc_processing_getpermissions, &params);
-			}
-			break;
 		case USRSTATE_GETUSERINFO_INPUT_UID:
-			{
-				StringList params = { Message };
-				RUN_CMD(sc_processing_getuserinfo, &params);
-			}
-			break;
 		case USRSTATE_GETNOTIFY_INPUT_UID:
 			{
+				static const std::map<int, cmd_proc_func> cmdMap =
+				{
+					{ USRSTATE_GETPERMISSION_INPUT_UID, sc_processing_getpermissions },
+					{ USRSTATE_GETUSERINFO_INPUT_UID,   sc_processing_getuserinfo    },
+					{ USRSTATE_GETNOTIFY_INPUT_UID,     sc_processing_getnotify      },
+				};
 				StringList params = { Message };
-				RUN_CMD(sc_processing_getnotify, &params);
+				RUN_CMD(cmdMap.at(RecvUserInfo.State), &params);
+			}
+			break;
+		case USRSTATE_SENDMSG_INPUT_UID:
+			{
+				std::unique_ptr<DB_User> usr((Message.IsValidNumber()) ? GetUserByUID(Message) : GetUserByUsername(Message));
+				if (!usr)
+				{
+					SetUserState(RecvUserInfo, USRSTATE_FREE);
+					SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, BOTMSG_USER_NOT_FOUND, REPLYBTN_CAPTION_FIND);
+				}
+				SetUserState(RecvUserInfo, USRSTATE_SENDMSG_INPUT_MSG, ParamsToJSON(USRSTATE_SENDMSG_INPUT_MSG_params,{usr->UID}));
+				tgbot_SendMessage(RecvChat->Id, SMAnsiString::smprintf(BOTMSG_INPUT_MSGTEXT, C_STR(MakeFullUserName(usr.get(),true))));
+			}
+			break;
+		case USRSTATE_SENDMSG_INPUT_MSG:
+			{
+				GET_USRSTATE_PARAMS(RecvUserInfo.StateParams, USRSTATE_SENDMSG_INPUT_MSG_params);
+				uint64_t to_uid = gupvalues.at(0);
+				SMAnsiString msg = SMAnsiString::smprintf
+				(
+					BOTMSG_FROM_ADMIN,
+					C_STR(MakeFullUserName(&RecvUserInfo, true)),
+					C_STR(Message)
+				);
+				tgbot_SendMessage(to_uid, msg);
+				SetUserState(RecvUserInfo, USRSTATE_FREE);
+				SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, BOTMSG_SUCCESSFULL, REPLYBTN_CAPTION_FIND);
 			}
 			break;
 	}

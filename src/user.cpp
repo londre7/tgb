@@ -15,12 +15,14 @@ StringList USRSTATE_SETPERMISSION_INPUT_VALUE_params =
 	"uid",
 	"nbit"
 };
+StringList &USRSTATE_SENDMSG_INPUT_MSG_params = USRSTATE_SETPERMISSION_INPUT_NBIT_params;
 
 // права пользователей
 static StringList usrAccessStrList =
 {
 	"Управление правами пользователей",   // PERMISSION_MANAGE_USR_ACCESS
 	"Просмотр информации о пользователе", // PERMISSION_USR_INFO
+	"Отправка сообщений пользователям",   // PERMISSION_SENDMSG
 };
 // уведомления
 static StringList usrNotifyStrList =

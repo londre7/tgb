@@ -1,5 +1,96 @@
 #include "tg_bot.h"
 
+#define DECLARE_DEFAULT_CONSTRUCTORS(classname) \
+classname::classname() { this->InitAll(); }                                                 \
+classname::classname(json_t* ObjectEntry) { this->InitAll(); this->FromJSON(ObjectEntry); } 
+#define DECLARE_DEFAULT_DESTRUCTORS(classname) \
+classname::~classname() { this->FreeAll(); }
+
+DECLARE_DEFAULT_CONSTRUCTORS(TGBOT_Chat)
+DECLARE_DEFAULT_DESTRUCTORS(TGBOT_Chat)
+void TGBOT_Chat::InitAll()
+{
+	RESET_ULONGLONG(Id);
+	CLEAR_STR(Type);
+	CLEAR_STR(Title);
+	CLEAR_STR(Username);
+	CLEAR_STR(FirstName);
+	CLEAR_STR(LastName);
+	RESET_BOOL(IsForum);
+	RESET_PTR(Photo);
+	CLEAR_STR(EmojiStatusCustomEmojiId);
+	CLEAR_STR(Bio);
+	RESET_BOOL(HasPrivateForwards);
+	RESET_BOOL(HasRestrictedVoiceAndVideoMessages);
+	RESET_BOOL(JoinToSendMessages);
+	RESET_BOOL(JoinByRequest);
+	CLEAR_STR(Description);
+	CLEAR_STR(InviteLink);
+	RESET_PTR(PinnedMessage);
+	RESET_PTR(Permissions);
+	RESET_INT(SlowModeDelay);
+	RESET_INT(MessageAutoDeleteTime);
+	RESET_BOOL(HasProtectedContent);
+	CLEAR_STR(StickerSetName);
+	RESET_BOOL(CanSetStickerSet);
+	RESET_ULONGLONG(LinkedChatId);
+	RESET_PTR(Location);
+}
+void TGBOT_Chat::FreeAll()
+{
+	ActiveUsernames.clear();
+	DELETE_SINGLE_OBJECT(Photo);
+	DELETE_SINGLE_OBJECT(PinnedMessage);
+	DELETE_SINGLE_OBJECT(Permissions);
+	DELETE_SINGLE_OBJECT(Location);
+}
+DECLARE_DEFAULT_CONSTRUCTORS(TGBOT_Message)
+DECLARE_DEFAULT_DESTRUCTORS(TGBOT_Message)
+void TGBOT_Message::InitAll()
+{
+	RESET_ULONGLONG(MessageId);
+	RESET_ULONGLONG(MessageThreadId);
+	RESET_PTR(From);
+	RESET_INT(Date);
+	RESET_PTR(Chat);
+	RESET_PTR(ForwardFrom);
+	RESET_PTR(ForwardFromChat);
+	RESET_ULONGLONG(ForwardFromMessageId);
+	CLEAR_STR(ForwardSignature);
+	CLEAR_STR(ForwardSenderName);
+	RESET_INT(ForwardDate);
+	RESET_BOOL(IsTopicMessage);
+	RESET_BOOL(IsAutomaticForward);
+	RESET_PTR(ReplyToMessage);
+	RESET_INT(EditDate);
+	RESET_BOOL(HasProtectedContent);
+	CLEAR_STR(MediaGroupId);
+	CLEAR_STR(AuthorSignature);
+	CLEAR_STR(Text);
+	RESET_PTR(Sticker);
+	CLEAR_STR(Caption);
+	RESET_PTR(Contact);
+	CLEAR_STR(NewChatTitle);
+	RESET_BOOL(DeleteChatPhoto);
+	RESET_BOOL(GroupChatCreated);
+	RESET_BOOL(SupergroupChatCreated);
+	RESET_BOOL(ChannelChatCreated);
+	RESET_PTR(ReplyMarkup);
+}
+void TGBOT_Message::FreeAll()
+{
+	Entities.clear();
+	Photo.clear();
+	DELETE_SINGLE_OBJECT(this->Chat);
+	DELETE_SINGLE_OBJECT(this->ForwardFrom);
+	DELETE_SINGLE_OBJECT(this->ForwardFromChat);
+	DELETE_SINGLE_OBJECT(this->ReplyToMessage);
+	DELETE_SINGLE_OBJECT(this->From);
+	DELETE_SINGLE_OBJECT(this->Contact);
+	DELETE_SINGLE_OBJECT(this->Sticker);
+	DELETE_SINGLE_OBJECT(this->ReplyMarkup);
+}
+
 bool tgbot_GetUpdates(std::vector<TGBOT_Update*> &updates, uint64_t offset)
 {
 	// получаем обновления

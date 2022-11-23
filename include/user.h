@@ -7,7 +7,7 @@
 #define DEFAULT_USER_PERMISIONS           0x0000000000000000ULL
 #define PERMISSION_MANAGE_USR_ACCESS      0x0000000000000001ULL // управление разрешениями пользователей
 #define PERMISSION_USR_INFO               0x0000000000000002ULL // просмотр информации о пользователях
-#define PERMISSION_FLAG_02                0x0000000000000004ULL
+#define PERMISSION_SENDMSG                0x0000000000000004ULL // отправка сообщений пользователям
 #define PERMISSION_FLAG_03                0x0000000000000008ULL
 #define PERMISSION_FLAG_04                0x0000000000000010ULL
 #define PERMISSION_FLAG_05                0x0000000000000020ULL
@@ -45,7 +45,9 @@ enum // состояния пользователей
 	USRSTATE_GETNOTIFY_INPUT_UID,
 	USRSTATE_SETNOTIFY_INPUT_UID,
 	USRSTATE_SETNOTIFY_INPUT_NBIT,
-	USRSTATE_SETNOTIFY_INPUT_VALUE
+	USRSTATE_SETNOTIFY_INPUT_VALUE,
+	USRSTATE_SENDMSG_INPUT_UID,
+	USRSTATE_SENDMSG_INPUT_MSG
 };
 
 // тут объявляем списки параметров для тех состояний, где они нужны (реализация в user.cpp)
@@ -54,6 +56,7 @@ enum // состояния пользователей
 extern StringList  USRSTATE_CHAT_params;
 extern StringList  USRSTATE_SETPERMISSION_INPUT_NBIT_params;
 extern StringList  USRSTATE_SETPERMISSION_INPUT_VALUE_params;
+extern StringList  &USRSTATE_SENDMSG_INPUT_MSG_params;
 
 class DB_User
 {
@@ -108,7 +111,7 @@ class DB_User
 
 bool IsSuperUser(const SMAnsiString& username);
 bool SetUserState(uint64_t uid, int state, const SMAnsiString &json_str);
-bool SetUserState(DB_User& usr, int state, const SMAnsiString &json_str);
+bool SetUserState(DB_User& usr, int state, const SMAnsiString &json_str="");
 bool SetUserPhoneNumber(uint64_t uid, const SMAnsiString &phone_number);
 bool SetUserPermission(uint64_t uid, uint64_t permission);
 bool SetUserNotify(uint64_t uid, uint64_t notify);

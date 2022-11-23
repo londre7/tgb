@@ -69,11 +69,15 @@
 #define BOTMSG_INPUT_VALUE                "Введите значение (0 или 1), или <i>/cancel</i> для отмены"
 #define BOTMSG_INVALID_INPUT_VALUE        "❌ Неверно задано значение. Повторите попытку, или введите <i>/cancel</i> для отмены"
 #define BOTMSG_LIMIT_FREE_CHATS           "Вы достигли ограничения по количеству бесплатных чатов в день. Чтобы продолжить, приобретите пакет, либо дождитесь завтра :)"
+#define BOTMSG_USER_ID                    "Ваш ID: %llu"
+#define BOTMSG_INPUT_MSGTEXT              "Введите текст сообщения для %s. Для отмены введи <i>/cancel</i>"
+#define BOTMSG_FROM_ADMIN                 "Сообщение от администратора %s:\n\n%s"
 
 // названия INLINE кнопок
 #define INLINEBTN_CAPTION_PRIVATE_POLICY  "Политика конфиденциальности"
 #define INLINEBTN_CAPTION_CMDLIST         "Список команд"
 #define INLINEBTN_CAPTION_FIND            "✈️ Искать"
+#define INLINEBTN_CAPTION_ID              "Мой ID"
 
 // названия REPLY кнопок
 #define REPLYBTN_CAPTION_FIND             INLINEBTN_CAPTION_FIND

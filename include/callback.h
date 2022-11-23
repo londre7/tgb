@@ -7,6 +7,7 @@
 #define CALLBACK_PRIVATE_POLICY        "private_policy"
 #define CALLBACK_CMDLIST               "cmdlist"
 #define CALLBACK_FIND                  "find"
+#define CALLBACK_ID                    "id"
 
 // параметры для callback'ов
 extern StringList CallbackParamsDef_About;
@@ -20,5 +21,6 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo);
 void cq_processing_private_policy(CQ_PROCESSING_PARAMS);
 void cq_processing_cmdlist(CQ_PROCESSING_PARAMS);
 void cq_processing_find(CQ_PROCESSING_PARAMS);
+void cq_processing_id(CQ_PROCESSING_PARAMS);
 
 #endif

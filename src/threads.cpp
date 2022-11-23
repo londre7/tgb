@@ -411,7 +411,7 @@ void* UpdThreadFunc(void *arg)
 		{
 			// отредактированное сообщение
 			TGBOT_Message *edited_message = update->EditedMessage;
-			WriteMessage(SMAnsiString::smprintf(SYSTEMMSG_RECV_EDITED_MESSAGE, edited_message->Message_Id, C_STR(edited_message->Chat->FirstName), C_STR(edited_message->From->Username), C_STR(edited_message->From->FirstName), C_STR(edited_message->Text)));
+			WriteMessage(SMAnsiString::smprintf(SYSTEMMSG_RECV_EDITED_MESSAGE, edited_message->MessageId, C_STR(edited_message->Chat->FirstName), C_STR(edited_message->From->Username), C_STR(edited_message->From->FirstName), C_STR(edited_message->Text)));
 			//if(edited_message->From->Id == edited_message->Chat->Id) tgbot_SendMessage(edited_message->From->Id, "Редачер!");
 		}
 

@@ -9,9 +9,9 @@ struct HTTP_Response
 	SMAnsiString HTTPVer;
 	SMAnsiString ErrCode;
 	SMAnsiString ContentType;
-    SMAnsiString DateStr;
+	SMAnsiString DateStr;
 	unsigned int ContentLength;
-    SMAnsiString Content;
+	SMAnsiString Content;
 
 	HTTP_Response() : Content(65536ull) {}
 };
