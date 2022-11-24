@@ -121,7 +121,8 @@ void sc_processing_cmdlist(DB_User& dbusrinfo, TGBOT_User* RecvUser, TGBOT_Chat*
 	                        "<b>/cmdlist</b> - вывести список доступных команд;\n"
 	                        "<b>/find</b> - запуск поиска собеседника\n"
 		                    "<b>/cancel</b> - отменить поиск\n"
-	                        "<b>/stop</b> - завершить беседу";
+	                        "<b>/stop</b> - завершить беседу\n"
+	                        "<b>/id</b> - показать мой ID";
 	SEND_MSG_AND_RETURN_WITH_BTN(RecvChat->Id, helptext, REPLYBTN_CAPTION_FIND);
 }
 
