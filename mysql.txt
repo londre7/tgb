@@ -36,3 +36,15 @@ CREATE TABLE tgb_find
 	start_find_time INT DEFAULT 0,  
 	PRIMARY KEY (id)
 );
+
+CREATE TABLE tgb_chats
+(
+	id BIGINT UNSIGNED AUTO_INCREMENT,
+	uid1 BIGINT UNSIGNED,
+	uid2 BIGINT UNSIGNED,
+	uid_stop BIGINT UNSIGNED DEFAULT 0,
+	start_time INT,
+	end_time INT DEFAULT 0,
+	state INT DEFAULT 0,
+	PRIMARY KEY (id) 
+);
