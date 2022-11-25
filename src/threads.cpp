@@ -1,12 +1,18 @@
 #include "tg_bot.h"
 
 // потоки обработки обновлений
-pthread_t                  *upd_thread = nullptr;       // потоки для обработки обновлений
-std::vector<TGBOT_Update*> *upd_thread_queue = nullptr; // очередь для потоков-обработчиков
-int                        *upd_queue_sizes = nullptr;  // длина каждой очереди
+pthread_t                  *upd_thread = nullptr;            // потоки для обработки обновлений
+std::queue<TGBOT_Update*>  *upd_thread_queue = nullptr;      // очередь для потоков-обработчиков
+std::multiset<uint64_t>    *upd_thread_queue_uids = nullptr; // здесь будем кэшировать UID для каждого обновления
+int                        *upd_queue_sizes = nullptr;       // длина каждой очереди
 pthread_mutex_t            *upd_queue_mutex = nullptr;
+pthread_mutex_t            *upd_queue_mutex_uids = nullptr;
 
-int GetNumUpdThreads(void) { return GetBotConf()->GetIntParam(BotConfStruct::NumUpdateThreads); }
+int GetNumUpdThreads(void)
+{
+	int val = GetBotConf()->GetIntParam(BotConfStruct::NumUpdateThreads);
+	return (val > 0)?val:1;
+}
 
 // поисковый поток
 static FindThread g_findThread;
@@ -136,6 +142,7 @@ inline void FreeUpdateTreads()
 {
 	DELETE_ARRAY_OBJECT(upd_thread);
 	DELETE_ARRAY_OBJECT(upd_thread_queue);
+	DELETE_ARRAY_OBJECT(upd_thread_queue_uids);
 	DELETE_ARRAY_OBJECT(upd_queue_sizes);
 	DELETE_ARRAY_OBJECT(upd_queue_mutex);
 }
@@ -143,13 +150,16 @@ void CreateUpdateThreads(int numthr)
 {
 	FreeUpdateTreads();
 
-	upd_thread_queue = new std::vector<TGBOT_Update*>[numthr];
+	upd_thread_queue = new std::queue<TGBOT_Update*>[numthr];
+	upd_thread_queue_uids = new std::multiset<uint64_t>[numthr];
 	upd_queue_sizes = new int[numthr];
 	upd_thread = new pthread_t[numthr];
 	upd_queue_mutex = new pthread_mutex_t[numthr];
+	upd_queue_mutex_uids = new pthread_mutex_t[numthr];
 	for (int i = 0, *idx; i < numthr; i++)
 	{
 		pthread_mutex_init(&upd_queue_mutex[i], NULL);
+		pthread_mutex_init(&upd_queue_mutex_uids[i], NULL);
 		idx = new int;
 		*idx = i;
 		pthread_create(&upd_thread[i], NULL, UpdThreadFunc, (void*)idx);
@@ -166,26 +176,32 @@ bool PushToUpdQueue(TGBOT_Update *upd)
 	if (upd_chat_id != 0)
 	{
 		bool finded = false;
-		for (int n = 0, breakflag = 0; n < num_update_threads; n++)
+		// обновления от одного юзера помещаются в один поток
+		for (int n = 0; n < num_update_threads; n++)
 		{
-			upd_queue_sizes[n] = upd_thread_queue[n].size();
-			for (int m = 0; m < upd_queue_sizes[n]; m++)
+			pthread_mutex_lock(&upd_queue_mutex_uids[n]);
+			upd_queue_sizes[n] = upd_thread_queue_uids[n].size();
+			if (!upd_queue_sizes[n])
 			{
-				if (GetChatIDFromUpdate(upd_thread_queue[n][m]) == upd_chat_id)
-				{
-					// пихаем в эту очередь
-					pthread_mutex_lock(&upd_queue_mutex[n]);
-					upd_thread_queue[n].push_back(upd);
-					pthread_mutex_unlock(&upd_queue_mutex[n]);
-					//WriteFormatMessage("Update %llu pushed to thread #%d", TGB_TEXTCOLOR_PURPURE, CurrentUpdate, n);
-
-					breakflag = 1;
-					finded = true;
-					break;
-				}
+				pthread_mutex_unlock(&upd_queue_mutex_uids[n]);
+				continue;
 			}
-			if (breakflag) break;
+			auto findel = upd_thread_queue_uids[n].find(upd_chat_id);
+			if (findel != upd_thread_queue_uids[n].end())
+			{
+				// пихаем в эту очередь
+				pthread_mutex_lock(&upd_queue_mutex[n]);
+				upd_thread_queue[n].push(upd);
+				upd_thread_queue_uids[n].insert(upd_chat_id);
+				pthread_mutex_unlock(&upd_queue_mutex[n]);
+				//WriteFormatMessage("Update %llu pushed to thread #%d", TGB_TEXTCOLOR_PURPURE, CurrentUpdate, n);
+				finded = true;
+				pthread_mutex_unlock(&upd_queue_mutex_uids[n]);
+				break;
+			}
+			pthread_mutex_unlock(&upd_queue_mutex_uids[n]);
 		}
+		// если для этого юзера в очередях ничего нет, то поместим обновление в самый незагруженный поток
 		if (!finded)
 		{
 			// в таком случае находим самый незагруженный поток
@@ -198,9 +214,13 @@ bool PushToUpdQueue(TGBOT_Update *upd)
 					min_load_idx = n;
 				}
 			}
+
 			pthread_mutex_lock(&upd_queue_mutex[min_load_idx]);
-			upd_thread_queue[min_load_idx].push_back(upd);
+			pthread_mutex_lock(&upd_queue_mutex_uids[min_load_idx]);
+			upd_thread_queue[min_load_idx].push(upd);
+			upd_thread_queue_uids[min_load_idx].insert(upd_chat_id);
 			pthread_mutex_unlock(&upd_queue_mutex[min_load_idx]);
+			pthread_mutex_unlock(&upd_queue_mutex_uids[min_load_idx]);
 			//WriteFormatMessage("Update %llu pushed to thread #%d", TGB_TEXTCOLOR_PURPURE, CurrentUpdate, min_load_idx);
 		}
 		return true;
@@ -253,9 +273,18 @@ static bool AddUserToDB(const DB_User& usr)
 
 static TGBOT_Update* GetUpdateFromThreadQueue(int thrid)
 {
-	TGBOT_Update* update = nullptr;
+	TGBOT_Update *update = nullptr;
 	pthread_mutex_lock(&upd_queue_mutex[thrid]);
-	if (!upd_thread_queue[thrid].empty()) update = upd_thread_queue[thrid][0];
+	if (!upd_thread_queue[thrid].empty())
+	{
+		update = upd_thread_queue[thrid].front();
+		upd_thread_queue->pop();
+		pthread_mutex_lock(&upd_queue_mutex_uids[thrid]);
+		auto val = upd_thread_queue_uids[thrid].find(GetChatIDFromUpdate(update));
+		if(val != upd_thread_queue_uids[thrid].end())
+			upd_thread_queue_uids[thrid].erase(val);
+		pthread_mutex_unlock(&upd_queue_mutex_uids[thrid]);
+	}
 	pthread_mutex_unlock(&upd_queue_mutex[thrid]);
 	return update;
 }
@@ -476,9 +505,9 @@ void* UpdThreadFunc(void *arg)
 		UpdateUserInDB(u_recv);
 		
 		// удаляем из очереди
-		pthread_mutex_lock(&upd_queue_mutex[thr_id]);
-		upd_thread_queue[thr_id].erase(upd_thread_queue[thr_id].begin());
-		pthread_mutex_unlock(&upd_queue_mutex[thr_id]);
+		//pthread_mutex_lock(&upd_queue_mutex[thr_id]);
+		//upd_thread_queue[thr_id].erase(upd_thread_queue[thr_id].begin());
+		//pthread_mutex_unlock(&upd_queue_mutex[thr_id]);
 	}
 	
 	return NULL;

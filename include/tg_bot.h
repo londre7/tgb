@@ -9,6 +9,8 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <queue>
+#include <set>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/sha.h>

@@ -169,7 +169,7 @@ static inline void DoStartStream(SMAnsiString& s)
 }
 
 template <typename T>
-inline void PutArrayOfArrayToJSON(SMAnsiString& s, const char* json_fld, TGBOT_ARRAY_OF_ARRAY<T> &struct_arr_of_arr)
+inline void PutArrayOfArrayToJSON(SMAnsiString& s, const char* json_fld, const TGBOT_ARRAY_OF_ARRAY<T> &struct_arr_of_arr)
 {
 	if (IsStrEmpty(json_fld)) return;
 	DoStartStream(s);
@@ -191,7 +191,7 @@ inline void PutArrayOfArrayToJSON(SMAnsiString& s, const char* json_fld, TGBOT_A
 }
 
 template <typename T>
-inline void PutArrayToJSON(SMAnsiString &s, const char* json_fld, TGBOT_ARRAY(T) &struct_arr)
+inline void PutArrayToJSON(SMAnsiString &s, const char* json_fld, const TGBOT_ARRAY(T) &struct_arr)
 {
 	if (IsStrEmpty(json_fld)) return;
 	DoStartStream(s);
@@ -207,7 +207,7 @@ inline void PutArrayToJSON(SMAnsiString &s, const char* json_fld, TGBOT_ARRAY(T)
 
 #define SetStdArrayToJSON(type, is_integer) \
 template <>                                                                                      \
-inline void PutArrayToJSON(SMAnsiString &s, const char* json_fld, TGBOT_ARRAY(type) &struct_arr) \
+inline void PutArrayToJSON(SMAnsiString &s, const char* json_fld, const TGBOT_ARRAY(type) &struct_arr) \
 {                                                                                                \
 	if (IsStrEmpty(json_fld)) return;                                                            \
 	DoStartStream(s);                                                                            \
@@ -235,7 +235,7 @@ SetStdArrayToJSON(time_t, true);
 #endif
 
 template <typename T>
-inline void PutValueToJSON(SMAnsiString &s, const char *json_fld, T *struct_fld)
+inline void PutValueToJSON(SMAnsiString &s, const char *json_fld, const T *struct_fld)
 {
 	if (!struct_fld || IsStrEmpty(json_fld)) return;
 	DoStartStream(s);
@@ -243,7 +243,7 @@ inline void PutValueToJSON(SMAnsiString &s, const char *json_fld, T *struct_fld)
 }
 
 #define PutStdValueToJSON(type, is_integer)                                                        \
-inline void PutValueToJSON(SMAnsiString &s, const char *json_fld, type &struct_fld)                \
+inline void PutValueToJSON(SMAnsiString &s, const char *json_fld, const type &struct_fld)          \
 {                                                                                                  \
 	if (!struct_fld || IsStrEmpty(json_fld)) return;                                               \
 	if (!static_cast<bool>(struct_fld)) return;                                                    \
@@ -306,11 +306,13 @@ class TGBOT_Update;
 class TGBOT_API_Class
 {
 	public:
+		virtual ~TGBOT_API_Class() {}
+
 		virtual void InitAll() = 0;
 		virtual void FreeAll() = 0;
 		// json serialize methods
 		virtual void FromJSON(json_t* ObjectEntry) = 0;
-		virtual SMAnsiString ToJSON() = 0;
+		virtual SMAnsiString ToJSON() const = 0;
 };
 
 class TGBOT_Location : public TGBOT_API_Class
@@ -325,7 +327,7 @@ class TGBOT_Location : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_Location)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_DOUBLE(Longitude);
 			RESET_DOUBLE(Latitude);
@@ -334,9 +336,9 @@ class TGBOT_Location : public TGBOT_API_Class
 			RESET_INT(Heading);
 			RESET_INT(ProximityAlertRadius);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -347,7 +349,7 @@ class TGBOT_Location : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "heading",                Heading             );
 			GetValueFromJSON(ObjectEntry, "proximity_alert_radius", ProximityAlertRadius);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "longitude",              Longitude           );
@@ -371,7 +373,7 @@ class TGBOT_PhotoSize : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_PhotoSize)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(FileId);
 			CLEAR_STR(FileUniqueId);
@@ -379,9 +381,9 @@ class TGBOT_PhotoSize : public TGBOT_API_Class
 			RESET_INT(Height);
 			RESET_LONGLONG(FileSize);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -391,7 +393,7 @@ class TGBOT_PhotoSize : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "height",         Height      );
 			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "file_id",        FileId      );
@@ -418,7 +420,7 @@ class TGBOT_Animation : public TGBOT_API_Class
 	ADD_CONSTRUCTORS(TGBOT_Animation)
 	ADD_DESTRUCTORS(TGBOT_Animation)
 
-	virtual void InitAll()
+	virtual void InitAll() override
 	{
 		CLEAR_STR(FileId);
 		CLEAR_STR(FileUniqueId);
@@ -430,12 +432,12 @@ class TGBOT_Animation : public TGBOT_API_Class
 		CLEAR_STR(MimeType);
 		RESET_LONGLONG(FileSize);
 	}
-	virtual void FreeAll()
+	virtual void FreeAll() override
 	{
 		DELETE_SINGLE_OBJECT(Thumb);
 	}
 
-	virtual void FromJSON(json_t* ObjectEntry)
+	virtual void FromJSON(json_t* ObjectEntry) override
 	{
 		FreeAll();
 		InitAll();
@@ -449,7 +451,7 @@ class TGBOT_Animation : public TGBOT_API_Class
 		GetValueFromJSON(ObjectEntry, "mime_type",      MimeType);
 		GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
 	}
-	virtual SMAnsiString ToJSON()
+	virtual SMAnsiString ToJSON() const override
 	{
 		SMAnsiString ostream;
 		PutValueToJSON(ostream, "file_id",        FileId);
@@ -475,16 +477,16 @@ class TGBOT_MaskPosition : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_MaskPosition)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Point);
 			RESET_DOUBLE(XShift);
 			RESET_DOUBLE(YShift);
 			RESET_DOUBLE(Scale);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -493,7 +495,7 @@ class TGBOT_MaskPosition : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "y_shift", YShift);
 			GetValueFromJSON(ObjectEntry, "scale",   Scale );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "point",   Point );
@@ -521,7 +523,7 @@ class TGBOT_User : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_User)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_ULONGLONG(Id);
 			RESET_BOOL(Is_Bot);
@@ -535,9 +537,9 @@ class TGBOT_User : public TGBOT_API_Class
 			RESET_BOOL(CanReadAllGroupMessages);
 			RESET_BOOL(SupportsInlineQueries);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -553,7 +555,7 @@ class TGBOT_User : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "can_read_all_group_messages", CanReadAllGroupMessages);
 			GetValueFromJSON(ObjectEntry, "supports_inline_queries",     SupportsInlineQueries  );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",                          Id                     );
@@ -585,7 +587,7 @@ class TGBOT_MessageEntity : public TGBOT_API_Class
 		ADD_CONSTRUCTORS(TGBOT_MessageEntity)
 		ADD_DESTRUCTORS(TGBOT_MessageEntity)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Type);
 			RESET_LONGLONG(Offset);
@@ -595,12 +597,12 @@ class TGBOT_MessageEntity : public TGBOT_API_Class
 			CLEAR_STR(Language);
 			CLEAR_STR(CustomEmojiId);
 		}
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			DELETE_SINGLE_OBJECT(User);
 		}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -612,7 +614,7 @@ class TGBOT_MessageEntity : public TGBOT_API_Class
 			GetValueFromJSON (ObjectEntry, "language",        Language);
 			GetValueFromJSON (ObjectEntry, "custom_emoji_id", CustomEmojiId);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "type",            Type);
@@ -643,12 +645,12 @@ class TGBOT_Sticker : public TGBOT_API_Class
 		ADD_CONSTRUCTORS(TGBOT_Sticker)
 		ADD_DESTRUCTORS(TGBOT_Sticker)
 
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			DELETE_SINGLE_OBJECT(this->Thumb);
 			DELETE_SINGLE_OBJECT(this->MaskPosition);
 		}
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(FileId);
 			CLEAR_STR(FileUniqueId);
@@ -662,7 +664,7 @@ class TGBOT_Sticker : public TGBOT_API_Class
 			RESET_PTR(MaskPosition);
 		}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -677,7 +679,7 @@ class TGBOT_Sticker : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "mask_position",  MaskPosition);
 			GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "file_id",        FileId);
@@ -705,19 +707,19 @@ class TGBOT_StickerSet : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_StickerSet)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Name);
 			CLEAR_STR(Title);
 			RESET_BOOL(IsAnimated);
 			RESET_BOOL(ContainsMasks);
 		}
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			Stickers.clear();
 		}
 
-		virtual void FromJSON(json_t * ObjectEntry)
+		virtual void FromJSON(json_t * ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -727,7 +729,7 @@ class TGBOT_StickerSet : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "contains_masks", ContainsMasks );
 			GetArrayFromJSON(ObjectEntry, "stickers",       Stickers      );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "name",           Name          );
@@ -749,16 +751,16 @@ class TGBOT_ChatPhoto : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_ChatPhoto)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(SmallFileId);
 			CLEAR_STR(SmallFileUniqueId);
 			CLEAR_STR(BigFileId);
 			CLEAR_STR(BigFileUniqueId);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -767,7 +769,7 @@ class TGBOT_ChatPhoto : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "big_file_id",          BigFileId         );
 			GetValueFromJSON(ObjectEntry, "big_file_unique_id",   BigFileUniqueId   );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "small_file_id",        SmallFileId);
@@ -793,7 +795,7 @@ class TGBOT_ChatPermissions : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_ChatPermissions)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_BOOL(CanSendMessages);
 			RESET_BOOL(CanSendMediaMessages);
@@ -805,9 +807,9 @@ class TGBOT_ChatPermissions : public TGBOT_API_Class
 			RESET_BOOL(CanPinMssages);
 			RESET_BOOL(CanManageTopics);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -821,7 +823,7 @@ class TGBOT_ChatPermissions : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "can_pin_messages",          CanPinMssages);
 			GetValueFromJSON(ObjectEntry, "can_manage_topics",         CanManageTopics);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "can_send_messages",         CanSendMessages);
@@ -846,24 +848,24 @@ class TGBOT_ChatLocation : public TGBOT_API_Class
 		ADD_CONSTRUCTORS(TGBOT_ChatLocation)
 		ADD_DESTRUCTORS(TGBOT_ChatLocation)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_PTR(Location);
 			CLEAR_STR(Address);
 		}
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			DELETE_SINGLE_OBJECT(Location);
 		}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
 			GetValueFromJSON(ObjectEntry, "location", Location);
 			GetValueFromJSON(ObjectEntry, "address",  Address );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "location", Location);
@@ -905,10 +907,10 @@ class TGBOT_Chat : public TGBOT_API_Class
 		ADD_EXTERNAL_CONSTRUCTORS(TGBOT_Chat)
 		ADD_EXTERNAL_DESTRUCTORS(TGBOT_Chat)
 
-		virtual void InitAll();
-		virtual void FreeAll();
+		virtual void InitAll() override;
+		virtual void FreeAll() override;
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -939,7 +941,7 @@ class TGBOT_Chat : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "linked_chat_id",                          LinkedChatId                      );
 			GetValueFromJSON(ObjectEntry, "location",                                Location                          );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",                                      Id                                );
@@ -983,7 +985,7 @@ class TGBOT_Contact : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_Contact)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(PhoneNumber);
 			CLEAR_STR(FirstName);
@@ -991,9 +993,9 @@ class TGBOT_Contact : public TGBOT_API_Class
 			RESET_ULONGLONG(UserId);
 			CLEAR_STR(Vcard);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1003,7 +1005,7 @@ class TGBOT_Contact : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "user_id",       UserId     );
 			GetValueFromJSON(ObjectEntry, "vcard",         Vcard      );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "phone_number",  PhoneNumber);
@@ -1027,15 +1029,15 @@ class TGBOT_KeyboardButton : public TGBOT_API_Class
 		TGBOT_KeyboardButton(const TGBOT_KeyboardButton *val);
 		TGBOT_KeyboardButton(SMAnsiString Text, bool RequestContact, bool RequestLocation);
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Text);
 			RESET_BOOL(RequestContact);
 			RESET_BOOL(RequestLocation);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1043,7 +1045,7 @@ class TGBOT_KeyboardButton : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "request_contact",  RequestContact );
 			GetValueFromJSON(ObjectEntry, "request_location", RequestLocation);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "text",             Text           );
@@ -1070,7 +1072,7 @@ class TGBOT_InlineKeyboardButton : public TGBOT_API_Class
 		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString Url) { CustomInit(Text, Url, "", false); }
 		TGBOT_InlineKeyboardButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay) { CustomInit(Text, "", CallbackData, Pay); }
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Text);
 			CLEAR_STR(Url);
@@ -1079,11 +1081,11 @@ class TGBOT_InlineKeyboardButton : public TGBOT_API_Class
 			CLEAR_STR(SwitchInlineQueryCurrentChat);
 			RESET_BOOL(Pay);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
 		void CustomInit(SMAnsiString Text, SMAnsiString Url, SMAnsiString CallbackData, bool Pay);
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1094,7 +1096,7 @@ class TGBOT_InlineKeyboardButton : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "switch_inline_query_current_chat", SwitchInlineQueryCurrentChat);
 			GetValueFromJSON(ObjectEntry, "pay",                              Pay                         );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "text",                             Text                        );
@@ -1125,19 +1127,19 @@ class TGBOT_ReplyKeyboardMarkup: public TGBOT_Keyboard
 		ADD_CONSTRUCTORS(TGBOT_ReplyKeyboardMarkup)
 		TGBOT_ReplyKeyboardMarkup(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective) { CustomInit(ResizeKeyboard, OneTimeKeyboard, Selective, false); }
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_BOOL(ResizeKeyboard);
 			RESET_BOOL(OneTimeKeyboard);
 			RESET_BOOL(Selective);
 		}
-		virtual void FreeAll() { Keyboard.clear(); }
+		virtual void FreeAll() override { Keyboard.clear(); }
 
 		void CustomInit(bool ResizeKeyboard, bool OneTimeKeyboard, bool Selective, bool freemem = true);
 		void CreateButton(SMAnsiString Text);
 		void CreateRow() { Keyboard.CreateRow(); }
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1146,7 +1148,7 @@ class TGBOT_ReplyKeyboardMarkup: public TGBOT_Keyboard
 			GetValueFromJSON       (ObjectEntry, "selective",         Selective      );
 			GetArrayOfArrayFromJSON(ObjectEntry, "keyboard",          Keyboard       );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON       (ostream, "resize_keyboard",   ResizeKeyboard );
@@ -1165,21 +1167,21 @@ class TGBOT_InlineKeyboardMarkup: public TGBOT_Keyboard
 		ADD_CONSTRUCTORS(TGBOT_InlineKeyboardMarkup)
 		TGBOT_InlineKeyboardMarkup(const TGBOT_InlineKeyboardMarkup& kb) { InlineKeyboard = kb.InlineKeyboard; }
 
-		virtual void InitAll() {}
-		virtual void FreeAll() { InlineKeyboard.clear(); }
+		virtual void InitAll() override {}
+		virtual void FreeAll() override { InlineKeyboard.clear(); }
 
 		void CreateButton(SMAnsiString Text) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text)); }
 		void CreateButton(SMAnsiString Text, SMAnsiString Url) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, Url)); }
 		void CreateButton(SMAnsiString Text, SMAnsiString CallbackData, bool Pay) { InlineKeyboard.push_back(new TGBOT_InlineKeyboardButton(Text, CallbackData, Pay)); }
 		void CreateRow() { InlineKeyboard.CreateRow(); }
 
-		virtual void FromJSON(json_t * ObjectEntry)
+		virtual void FromJSON(json_t * ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
 			GetArrayOfArrayFromJSON(ObjectEntry, "inline_keyboard", InlineKeyboard);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutArrayOfArrayToJSON(ostream, "inline_keyboard", InlineKeyboard);
@@ -1195,21 +1197,21 @@ class TGBOT_ForceReply : public TGBOT_API_Class
 
 		ADD_CONSTRUCTORS(TGBOT_ForceReply)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_BOOL(ForceReply);
 			RESET_BOOL(Selective);
 		}
-		virtual void FreeAll() {}
+		virtual void FreeAll() override {}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
 			GetValueFromJSON(ObjectEntry, "force_reply", ForceReply);
 			GetValueFromJSON(ObjectEntry, "selective",   Selective );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "force_reply", ForceReply);
@@ -1255,27 +1257,27 @@ class TGBOT_Message : public TGBOT_API_Class
 		ADD_EXTERNAL_CONSTRUCTORS(TGBOT_Message)
 		ADD_EXTERNAL_DESTRUCTORS(TGBOT_Message)
 
-		virtual void InitAll();
-		virtual void FreeAll();
+		virtual void InitAll() override;
+		virtual void FreeAll() override;
 		
-		virtual void FromJSON(json_t *ObjectEntry)
+		virtual void FromJSON(json_t *ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
-			GetValueFromJSON(ObjectEntry, "message_id",              MessageId           );
+			GetValueFromJSON(ObjectEntry, "message_id",              MessageId            );
 			GetValueFromJSON(ObjectEntry, "message_thread_id",       MessageThreadId      );
-			GetValueFromJSON(ObjectEntry, "from",                    From                  );
+			GetValueFromJSON(ObjectEntry, "from",                    From                 );
 			GetValueFromJSON(ObjectEntry, "date",                    Date                 );
-			GetValueFromJSON(ObjectEntry, "chat",                    Chat                  );
-			GetValueFromJSON(ObjectEntry, "forward_from",            ForwardFrom           );
-			GetValueFromJSON(ObjectEntry, "forward_from_chat",       ForwardFromChat       );
+			GetValueFromJSON(ObjectEntry, "chat",                    Chat                 );
+			GetValueFromJSON(ObjectEntry, "forward_from",            ForwardFrom          );
+			GetValueFromJSON(ObjectEntry, "forward_from_chat",       ForwardFromChat      );
 			GetValueFromJSON(ObjectEntry, "forward_from_message_id", ForwardFromMessageId );
 			GetValueFromJSON(ObjectEntry, "forward_signature",       ForwardSignature     );
 			GetValueFromJSON(ObjectEntry, "forward_sender_name",     ForwardSenderName    );
 			GetValueFromJSON(ObjectEntry, "forward_date",            ForwardDate          );
 			GetValueFromJSON(ObjectEntry, "is_topic_message",        IsTopicMessage       );
 			GetValueFromJSON(ObjectEntry, "is_automatic_forward",    IsAutomaticForward   );
-			GetValueFromJSON(ObjectEntry, "reply_to_message",        ReplyToMessage        );
+			GetValueFromJSON(ObjectEntry, "reply_to_message",        ReplyToMessage       );
 			GetValueFromJSON(ObjectEntry, "edit_date",               EditDate             );
 			GetValueFromJSON(ObjectEntry, "has_protected_content",   HasProtectedContent  );
 			GetValueFromJSON(ObjectEntry, "media_group_id",          MediaGroupId         );
@@ -1293,7 +1295,7 @@ class TGBOT_Message : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "channel_chat_created",    ChannelChatCreated   );
 			GetValueFromJSON(ObjectEntry, "reply_markup",            ReplyMarkup          );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "message_id",              MessageId            );
@@ -1344,7 +1346,7 @@ class TGBOT_CallbackQuery : public TGBOT_API_Class
 		ADD_CONSTRUCTORS(TGBOT_CallbackQuery)
 		ADD_DESTRUCTORS(TGBOT_CallbackQuery)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			CLEAR_STR(Id);
 			RESET_PTR(From);
@@ -1354,13 +1356,13 @@ class TGBOT_CallbackQuery : public TGBOT_API_Class
 			CLEAR_STR(Data);
 			CLEAR_STR(GameShortName);
 		}
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			DELETE_SINGLE_OBJECT(this->From);
 			DELETE_SINGLE_OBJECT(this->Message);
 		}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1372,7 +1374,7 @@ class TGBOT_CallbackQuery : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "data",              Data);
 			GetValueFromJSON(ObjectEntry, "game_short_name",   GameShortName);
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "id",                Id             );
@@ -1399,7 +1401,7 @@ class TGBOT_Update : public TGBOT_API_Class
 		ADD_CONSTRUCTORS(TGBOT_Update)
 		ADD_DESTRUCTORS(TGBOT_Update)
 
-		virtual void InitAll()
+		virtual void InitAll() override
 		{
 			RESET_ULONGLONG(UpdateId);
 			RESET_PTR(Message);
@@ -1408,7 +1410,7 @@ class TGBOT_Update : public TGBOT_API_Class
 			RESET_PTR(EditedChannelPost);
 			RESET_PTR(CallbackQuery);
 		}
-		virtual void FreeAll()
+		virtual void FreeAll() override
 		{
 			DELETE_SINGLE_OBJECT(this->Message);
 			DELETE_SINGLE_OBJECT(this->EditedMessage);
@@ -1417,7 +1419,7 @@ class TGBOT_Update : public TGBOT_API_Class
 			DELETE_SINGLE_OBJECT(this->CallbackQuery);
 		}
 
-		virtual void FromJSON(json_t* ObjectEntry)
+		virtual void FromJSON(json_t* ObjectEntry) override
 		{
 			FreeAll();
 			InitAll();
@@ -1428,7 +1430,7 @@ class TGBOT_Update : public TGBOT_API_Class
 			GetValueFromJSON(ObjectEntry, "edited_channel_post", EditedChannelPost);
 			GetValueFromJSON(ObjectEntry, "callback_query",      CallbackQuery    );
 		}
-		virtual SMAnsiString ToJSON()
+		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
 			PutValueToJSON(ostream, "update_id",           UpdateId        );

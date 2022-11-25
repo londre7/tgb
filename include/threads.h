@@ -3,10 +3,10 @@
 
 #include "tg_bot.h"
 
-extern pthread_t					*upd_thread;		// рассылающие потоки
-extern std::vector<TGBOT_Update*>	*upd_thread_queue;	// очередь для потоков-обработчиков	
-extern pthread_mutex_t				*upd_queue_mutex;
-extern int							*upd_queue_sizes;
+extern pthread_t                 *upd_thread;		// потоки для обработки обновлений
+extern std::queue<TGBOT_Update*> *upd_thread_queue;	// очередь для потоков-обработчиков	
+extern pthread_mutex_t           *upd_queue_mutex;
+extern int                       *upd_queue_sizes;
 
 class FindThread
 {
