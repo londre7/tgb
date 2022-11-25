@@ -53,9 +53,9 @@ uint64_t SMKeyList::GetKey(size_t index) const
 
 bool SMKeyList::IsExist(uint64_t key) const
 {
-	register size_t i1, i2, i;
-	register uint64_t l1;
-	register const uint64_t *__data = data;
+	size_t i1, i2, i;
+	uint64_t l1;
+	const uint64_t *__data = data;
 
 	if (!numelem) { return false; }
 	if (numelem == 1) { return (key == __data[0]); }
@@ -85,9 +85,9 @@ bool SMKeyList::IsExist(uint64_t key) const
 
 bool SMKeyList::IsExist(uint64_t key, size_t &index) const
 {
-	register size_t i1, i2, i;
-	register uint64_t l1;
-	register uint64_t* __data = data;
+	size_t i1, i2, i;
+	uint64_t l1;
+	uint64_t* __data = data;
 
 	if (!numelem) { index = 0; return false; }
 

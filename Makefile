@@ -6,7 +6,7 @@ MODULE_NAME=tg_bot
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir := $(dir $(mkfile_path))
 
-CPPVER=-std=c++14
+CPPVER=-std=c++17
 CFLAGS=-c
 INCLUDE_PATH=-I/usr/include -Iinclude -I$(mkfile_dir)
 LIBRARY_PATH=-L/usr/lib64 -L/usr/lib64/mysql

@@ -295,7 +295,7 @@ void tgbot_SendMessage(uint64_t ChatID, const SMAnsiString &Text, TGBOT_Keyboard
 		"{ \"chat_id\":%llu, \"parse_mode\":\"HTML\", \"text\":\"%s\"%s }\0",
 		ChatID,
 		C_STR(Text),
-		C_STR(((Keyboard) ? ", \"reply_markup\":" + Keyboard->ToJSON() : ""))
+		C_STR(((Keyboard) ? ", \"reply_markup\":" + Keyboard->ToJSON() : SMAnsiString("")))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendMessage", content));
 }
@@ -448,7 +448,7 @@ void tgbot_editMessageText(uint64_t chat_id, uint64_t message_id, const SMAnsiSt
 		chat_id, 
 		message_id, 
 		C_STR(text), 
-		C_STR(((keyboard)?", \"reply_markup\":"+keyboard->ToJSON():""))
+		C_STR(((keyboard)?", \"reply_markup\":"+keyboard->ToJSON():SMAnsiString("")))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("editMessageText", content));
 }
@@ -463,7 +463,7 @@ void tgbot_sendVenue(uint64_t chat_id, double latitude, double longitude, const 
 		C_STR(SMAnsiString(longitude)),
 		C_STR(title),
 		C_STR(address),
-		C_STR(((keyboard) ? ", \"reply_markup\":" + keyboard->ToJSON() : ""))
+		C_STR(((keyboard) ? ", \"reply_markup\":" + keyboard->ToJSON() : SMAnsiString("")))
 	);
 	std::unique_ptr<HTTP_Response> response(tgbot_method("sendVenue", content));
 }

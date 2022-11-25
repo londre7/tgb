@@ -11,12 +11,12 @@ static SMAnsiString MakeFullUserName(const SMAnsiString& lastname, const SMAnsiS
 
 SMAnsiString MakeFullUserName(const TGBOT_User* user, bool useUsername)
 {
-	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
+	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:SMAnsiString(""));
 }
 
 SMAnsiString MakeFullUserName(const DB_User* user, bool useUsername)
 {
-	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username:"");
+	return MakeFullUserName(user->LastName, user->FirstName, (useUsername)?user->Username: SMAnsiString(""));
 }
 
 SMAnsiString MakeUsername(const SMAnsiString& username)

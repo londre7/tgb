@@ -266,9 +266,20 @@ static int CheckUserExistInDB(DB_User& usr, TGBOT_User* recv_user, time_t messag
 
 static bool AddUserToDB(const DB_User& usr)
 {
-	if (!InsertToDB("INSERT INTO tgb_users (uid, username, first_name, last_name, language_code, last_message_time) VALUES (" + SMAnsiString(usr.UID) + ", \'" + usr.Username + "\', \'" + usr.FirstName + "\', \'" + usr.LastName + "\', \'" + usr.LanguageCode + "\', " + SMAnsiString(usr.LastMessage) + ")"))
-		return false;
-	return true;
+	return InsertToDB
+	(
+		SMAnsiString::smprintf
+		(
+			"INSERT INTO tgb_users (uid, username, first_name, last_name, language_code, last_message_time) "
+			"VALUES (%llu, \'%s\', \'%s\', \'%s\', \'%s\', %d)",
+			usr.UID,
+			C_STR(usr.Username),
+			C_STR(usr.FirstName),
+			C_STR(usr.LastName),
+			C_STR(usr.LanguageCode),
+			(int)usr.LastMessage
+		)
+	);
 }
 
 static TGBOT_Update* GetUpdateFromThreadQueue(int thrid)
