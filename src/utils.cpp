@@ -30,20 +30,19 @@ void usleep(unsigned int usec)
 }
 #endif
 
-SMAnsiString ExtractFilePath(SMAnsiString FileName)
+SMAnsiString ExtractFilePath(const SMAnsiString &FileName)
 {
-	for(int i=FileName.length()-1; i>=0; i--)
+	for(int i=(int)FileName.length()-1; i>=0; i--)
 	{
 		if(FileName[i] == '/')
 		{
-			return FileName.Delete(i+1, FileName.length());
+			return FileName.Delete(size_t(i+1), FileName.length());
 		}
 	}
-	
 	return "";
 }
 
-bool LoadLastBotState(SMAnsiString FileName)
+bool LoadLastBotState(const SMAnsiString &FileName)
 {
 	// размер файла
 	struct stat st;
@@ -103,7 +102,7 @@ bool LoadLastBotState(SMAnsiString FileName)
 	return true;
 }
 
-bool SaveLastBotState(SMAnsiString FileName)
+bool SaveLastBotState(const SMAnsiString &FileName)
 {
 	std::ofstream	file;
 	
@@ -171,7 +170,7 @@ void WriteFormatMessage(const SMAnsiString& Format, int Color, ...)
 	va_end(ap);
 }
 
-void AppendStringToLog(SMAnsiString filename, const SMAnsiString& Message)
+void AppendStringToLog(const SMAnsiString &filename, const SMAnsiString& Message)
 {
 	if (!filename.IsEmpty())
 	{
@@ -181,7 +180,7 @@ void AppendStringToLog(SMAnsiString filename, const SMAnsiString& Message)
 	}
 }
 
-StringList* LoadTextFromFile(SMAnsiString FileName)
+StringList* LoadTextFromFile(const SMAnsiString &FileName)
 {
 	// размер файла
 	struct stat st;
@@ -229,7 +228,7 @@ StringList* LoadTextFromFile(SMAnsiString FileName)
 	return text;
 }
 
-bool LoadTextFromFile_v2(SMAnsiString FileName, StringList *Output)
+bool LoadTextFromFile_v2(const SMAnsiString &FileName, StringList *Output)
 {
 	Output->clear();
 	
@@ -380,16 +379,16 @@ int GetDays(int month, int year) // months - 0 for january, ..., 11 for december
 	return result;
 }
 
-bool GetDateFromString(const SMAnsiString& str, int &day, int &month, int &year)
+bool GetDateFromString(const SMAnsiString &str, int &day, int &month, int &year)
 {
 	day = month = year = 0;
 	// сколько точек в дате? правильно - 2!
-	int counter = 0;
-	const int _strlen = str.length();
+	size_t counter = 0;
+	const size_t _strlen = str.length();
 	SMAnsiString c[3];
 	char buf[8] = { '\0' };
 	char* bp=buf;
-	for (int i = 0; i < _strlen; i++)
+	for (size_t i = 0; i < _strlen; i++)
 	{
 		if (str[i] == '.')
 		{
@@ -417,7 +416,7 @@ bool GetDateFromString(const SMAnsiString& str, int &day, int &month, int &year)
 				return false;
 		}
 	}
-	if (counter != 2) return false;
+	if (counter != 2ull) return false;
 
 	day = c[0];
 	month = c[1];
@@ -510,4 +509,8 @@ class SMAllocator
 /*void* operator new(size_t size)
 {
 	return malloc(size);
+}
+void operator delete(void* pointer)
+{
+	free(pointer);
 }*/

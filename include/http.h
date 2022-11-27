@@ -10,10 +10,8 @@ struct HTTP_Response
 	SMAnsiString ErrCode;
 	SMAnsiString ContentType;
 	SMAnsiString DateStr;
-	unsigned int ContentLength;
+	size_t       ContentLength = 0ull;
 	SMAnsiString Content;
-
-	HTTP_Response() : Content(65536ull) {}
 };
 
 extern HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, int &Err);

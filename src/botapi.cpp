@@ -164,7 +164,7 @@ uint64_t GetChatIDFromUpdate(TGBOT_Update* Upd)
 	if (Upd->EditedMessage != nullptr) return Upd->EditedMessage->Chat->Id;
 	if (Upd->ChannelPost != nullptr) return Upd->ChannelPost->Chat->Id;
 	if (Upd->EditedChannelPost != nullptr) return Upd->EditedChannelPost->Chat->Id;
-	return 0;
+	return 0ull;
 }
 
 TGBOT_KeyboardButton::TGBOT_KeyboardButton(const TGBOT_KeyboardButton* val)

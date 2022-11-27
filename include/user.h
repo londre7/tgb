@@ -61,19 +61,19 @@ extern StringList  &USRSTATE_SENDMSG_INPUT_MSG_params;
 class DB_User
 {
 	public:
-		uint64_t     UID;
+		uint64_t     UID          = 0ull;
 		SMAnsiString FirstName,
 		             LastName,
 		             Username,
 		             LanguageCode;
-		time_t       LastMessage;  // дата и вермя с последнего сообщения
+		time_t       LastMessage  = 0l;  // дата и вермя с последнего сообщения
 		SMAnsiString PhoneNumber;
-		uint64_t     Permissions;
-		uint64_t     Notify;
-		int          State;
+		uint64_t     Permissions  = 0ull;
+		uint64_t     Notify       = 0ull;
+		int          State        = 0;
 		SMAnsiString StateParams;
 		
-		DB_User(): UID(0ULL), LastMessage(0), State(0), Permissions(0ull), Notify(0ull), StateParams("{}") {}
+		DB_User() {}
 		DB_User
 		(
 			uint64_t uid,
@@ -86,7 +86,7 @@ class DB_User
 			uint64_t permissions,
 			uint64_t notify,
 			int	state,
-			SMAnsiString stateParams
+			const SMAnsiString &stateParams
 		):	
 		UID(uid),
 		Username(username), 

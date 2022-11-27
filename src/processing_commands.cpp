@@ -71,7 +71,7 @@ static void run_cmd(const Cmd &cmd, DB_User &dbusrinfo, const SMAnsiString &para
 	return;
 }
 
-void RunProcCmd(const SMAnsiString &cmd, const SMAnsiString &param, TGBOT_Message* message, DB_User& dbusrinfo)
+void RunProcCmd(const SMAnsiString &cmd, const SMAnsiString &param, TGBOT_Message *message, DB_User &dbusrinfo)
 {
 	// выполняем команду
 	for (auto& command : CmdDef)

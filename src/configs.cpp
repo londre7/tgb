@@ -14,12 +14,12 @@ bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 	for (size_t i = 0; i < file_count; i++)
 	{
 		SMAnsiString &fstr = file->at(i);
-		if (fstr.length() == 2)
+		if (fstr.length() == 2ull)
 		{
 			if ((fstr[0] != '/') && (fstr[1] != '/'))
 				return false;
 		}
-		else if (fstr.length() > 2)
+		else if (fstr.length() > 2ull)
 		{
 			if ((fstr[0] != L'/') && (fstr[1] != L'/'))
 			{
@@ -27,8 +27,8 @@ bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 				if (assign_pos == -1)
 					return false;
 
-				key = fstr.Delete(assign_pos, fstr.length());
-				fstr.DeleteMyself(0, assign_pos + 1);
+				key = fstr.Delete((size_t)assign_pos, fstr.length());
+				fstr.DeleteMyself(0ull, size_t(assign_pos + 1));
 
 				if (!key.length())
 					return false;
@@ -38,7 +38,7 @@ bool LoadConfFile(BaseConf* ConfStruct, const SMAnsiString& FileName)
 				ConfStruct->SetParam(key, fstr);
 			}
 		}
-		else if (fstr.length() == 1)
+		else if (fstr.length() == 1ull)
 			return false;
 	}
 	return true;

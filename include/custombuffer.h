@@ -7,10 +7,10 @@
 class SMBaseIO
 {
 	protected:
-		uint8_t *buffer;
-		size_t  allocsize;
-		size_t  golovkaIO;
-		size_t  mempadding;
+		uint8_t *buffer    = nullptr;
+		size_t  allocsize  = 0ull;
+		size_t  golovkaIO  = 0ull;
+		size_t  mempadding = BUF_MEMPADDING;
 
 		void alloc(size_t sz, size_t _golovkaIO=0ULL)
 		{
@@ -37,7 +37,7 @@ class SMBaseIO
 		void reset() { golovkaIO = 0ull; }
 
 	public:
-		SMBaseIO() : mempadding(BUF_MEMPADDING) { alloc(mempadding); }
+		SMBaseIO() { alloc(mempadding); }
 		SMBaseIO(size_t sz) : mempadding(sz) { alloc(mempadding); }
 		~SMBaseIO() { free(); }
 
@@ -81,8 +81,8 @@ class SMOutBuffer : public SMBaseIO
 		void PutChar(char pval) { PutBlock(reinterpret_cast<void*>(&pval), sizeof(pval)); }
 		void PutUChar(unsigned char pval) { PutBlock(reinterpret_cast<void*>(&pval), sizeof(pval)); }
 		void PutWchar(wchar_t pval) { PutBlock(reinterpret_cast<void*>(&pval), sizeof(pval)); }
-		void PutCharStr(const char* str, size_t strl = 0ULL) { PutBlock(str, (strl)?strl:strlen(str)+1); }
-		void PutCharStr(const SMAnsiString& str) { PutBlock(str.c_str(), str.length()+1); }
+		void PutCharStr(const char* str, size_t strl = 0ULL) { PutBlock(str, (strl)?strl:strlen(str)+1ull); }
+		void PutCharStr(const SMAnsiString& str) { PutBlock(str.c_str(), str.length()+1ull); }
 };
 // TODO: надо доделать
 class SMInBuffer : public SMBaseIO

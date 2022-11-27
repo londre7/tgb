@@ -12,19 +12,26 @@
 #define STR_ALIGNMENT 256ULL // По-умолчанию под строку будет аллоцироваться STR_ALIGNMENT байт. Если для выполнения какой-либо операции
                              // понадобится больше места, сделаем переаллокацию.
 
-#define MSTRLEN(_str) (int)strlen(_str)
-#define C_STR(str) str.c_str()
+#define MSTRLEN(_str)  (int)strlen(_str)
+#define C_STR(str)     str.c_str()
 #define CLEAR_STR(str) str[0]='\0'
 
 inline int IsStrEmpty(const char* p) { return !(p && *p); } 
 
+// строки выровнены по STR_ALIGNMENT байт. Т.е. их bufferSize всегда кратный STR_ALIGNMENT
 class SMAnsiString
 {
 	private:
-		char  *data;        // основной буфер
-		size_t bufferSize; // длина основного буфера
+		char  *data       = nullptr;       // основной буфер
+		size_t bufferSize = STR_ALIGNMENT; // длина основного буфера
 
-		void Reallocate(size_t newlen)
+		inline void Alloc(size_t len)
+		{
+			const size_t newsz = AlignedSize(len, STR_ALIGNMENT);
+			data = new char[newsz];
+			bufferSize = newsz;
+		}
+		inline void Reallocate(size_t newlen)
 		{
 			if (newlen < bufferSize) return;
 			char* newdata = new char[newlen];
@@ -36,66 +43,56 @@ class SMAnsiString
 			bufferSize = newlen;
 			data = newdata;
 		}
-		void ReallocateIfNeeded(size_t slen, bool addfl=false)
+		inline void ReallocateIfNeeded(size_t slen, bool addfl=false)
 		{
-			if (addfl)
-			{
-				size_t bsz = strlen(data) + slen + 1;
-				if (bufferSize < bsz)
-					Reallocate(bsz + STR_ALIGNMENT);
-			}
-			else
-			{
-				if (bufferSize < slen)
-					Reallocate(slen + STR_ALIGNMENT);
-			}
+			const size_t bsz = (addfl) ? strlen(data)+slen+1ull : slen+1ull;
+			if (bufferSize < bsz)
+				Reallocate(AlignedSize(bsz, STR_ALIGNMENT));
 		}
 
 	public:
 		// конструкторы
-		SMAnsiString():bufferSize(STR_ALIGNMENT) 
+		SMAnsiString()
 		{ 
 			data = new char[bufferSize];
 			data[0] = '\0';
 		}
 		SMAnsiString(const char *str) 
 		{
-			size_t slen = (str)?strlen(str):0ull;
-			bufferSize = (slen < STR_ALIGNMENT) ? STR_ALIGNMENT : slen + STR_ALIGNMENT;
-			data = new char[bufferSize];
+			const size_t slen = (str)?strlen(str):0ull;
+			Alloc(slen);
 			if(slen) memcpy(data, str, slen);
 			data[slen] = '\0';
 		}
 		SMAnsiString(const char* str, size_t len, int dummy)
 		{
-			size_t slen = (str) ? len : 0ull;
-			bufferSize = (slen < STR_ALIGNMENT) ? STR_ALIGNMENT : slen + STR_ALIGNMENT;
-			data = new char[bufferSize];
+			const size_t slen = (str) ? len : 0ull;
+			Alloc(slen + 1);
 			if (slen) memcpy(data, str, slen);
 			data[slen] = '\0';
 		}
 		SMAnsiString(char* str, size_t len) // сотрём сами
 		{
 			data = str;
-			bufferSize = len;
+			bufferSize = AlignedSize(len, STR_ALIGNMENT);
 		}
-		SMAnsiString(char value):bufferSize(STR_ALIGNMENT) { data = new char[bufferSize]; data[0]=value; data[1]='\0'; }
+		SMAnsiString(char value) { data = new char[bufferSize]; data[0]=value; data[1]='\0'; }
 #ifndef __GNUG__
-		SMAnsiString(int value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%d\0", value); }
-		SMAnsiString(long value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%ld\0", value); }
-		SMAnsiString(long long value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%lld\0", value); }
-		SMAnsiString(unsigned int value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%u\0", value); }
-		SMAnsiString(unsigned long value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%lu\0", value); }
-		SMAnsiString(unsigned long long value):bufferSize(STR_ALIGNMENT) { sprintf_s(data = new char[bufferSize], bufferSize, "%llu\0", value); }
+		SMAnsiString(int value) { sprintf_s(data = new char[bufferSize], bufferSize, "%d\0", value); }
+		SMAnsiString(long value) { sprintf_s(data = new char[bufferSize], bufferSize, "%ld\0", value); }
+		SMAnsiString(long long value) { sprintf_s(data = new char[bufferSize], bufferSize, "%lld\0", value); }
+		SMAnsiString(unsigned int value) { sprintf_s(data = new char[bufferSize], bufferSize, "%u\0", value); }
+		SMAnsiString(unsigned long value) { sprintf_s(data = new char[bufferSize], bufferSize, "%lu\0", value); }
+		SMAnsiString(unsigned long long value) { sprintf_s(data = new char[bufferSize], bufferSize, "%llu\0", value); }
 #else
-		SMAnsiString(int value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%d", value); }
-		SMAnsiString(long value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%ld", value); }
-		SMAnsiString(long long value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%lld", value); }
-		SMAnsiString(unsigned int value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%u", value); }
-		SMAnsiString(unsigned long value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%lu", value); }
-		SMAnsiString(unsigned long long value):bufferSize(STR_ALIGNMENT) { sprintf(data = new char[bufferSize], "%llu", value); }
+		SMAnsiString(int value) { sprintf(data = new char[bufferSize], "%d", value); }
+		SMAnsiString(long value) { sprintf(data = new char[bufferSize], "%ld", value); }
+		SMAnsiString(long long value) { sprintf(data = new char[bufferSize], "%lld", value); }
+		SMAnsiString(unsigned int value) { sprintf(data = new char[bufferSize], "%u", value); }
+		SMAnsiString(unsigned long value) { sprintf(data = new char[bufferSize], "%lu", value); }
+		SMAnsiString(unsigned long long value) { sprintf(data = new char[bufferSize], "%llu", value); }
 #endif
-		SMAnsiString(double value):bufferSize(STR_ALIGNMENT)
+		SMAnsiString(double value)
 		{ 
 			sprintf(data = new char[bufferSize], "%f", value);
 			const int stlen = MSTRLEN(data);
@@ -106,7 +103,7 @@ class SMAnsiString
 				else { if (f) data[i + 1] = '\0'; break; }
 			}
 		}
-		SMAnsiString(bool value):bufferSize(STR_ALIGNMENT)
+		SMAnsiString(bool value)
 		{
 			const char* str = (value) ? "true" : "false";
 			size_t slen = strlen(str);
@@ -118,7 +115,7 @@ class SMAnsiString
 		SMAnsiString(const SMAnsiString& value)
 		{
 			size_t bsz = strlen(value.c_str()) + 1;
-			bufferSize = (bsz <= STR_ALIGNMENT) ? STR_ALIGNMENT : bsz + STR_ALIGNMENT;
+			bufferSize = value.bufferSize;
 			data = new char[bufferSize];
 			memcpy(data, value.c_str(), bsz);
 		}
@@ -131,12 +128,21 @@ class SMAnsiString
 		}
 
 		// деструктор
-		~SMAnsiString() { if(data) delete[] data; }
+		~SMAnsiString()
+		{
+			if(data) delete[] data;
+		}
+
+		// выравнивание на align
+		static inline size_t AlignedSize(size_t val, size_t align)
+		{
+			return val + (align - (val % align));
+		}
 
 		// методы
-		const char* c_str() const { return data; }       // возвращаем const buffer со строкой
-		int length() const { return (int)strlen(data); } // длина строки
-		size_t SetChar(size_t idx, const char c)
+		const char* c_str() const { return data; }      // возвращаем const buffer со строкой
+		inline size_t length() const { return strlen(data); }  // длина строки
+		inline size_t SetChar(size_t idx, const char c)
 		{
 			const size_t sl = strlen(data);
 			if (idx < 0) idx = 0;
@@ -176,9 +182,9 @@ class SMAnsiString
 			}
 			return -1;
 		}
-		int PosSS(const SMAnsiString &substring)
+		int PosSS(const SMAnsiString &substring) const
 		{
-			const int sslen = substring.length();
+			const int sslen = MSTRLEN(substring.data);
 			const int sldata = MSTRLEN(data);
 			const char* strss = substring.c_str();
 
@@ -193,11 +199,11 @@ class SMAnsiString
 			}
 			return -1;
 		}
-		SMAnsiString Delete(int Index, int Count) const
+		SMAnsiString Delete(size_t Index, size_t Count) const
 		{
 			SMAnsiString ret(data);
 			const size_t sl = strlen(data);
-			if ((Count > 0) && (Index < sl))
+			if ((Count > 0ull) && (Index < sl))
 			{
 				const size_t r_ind = ((Index + Count) > sl) ? sl : (Index + Count);
 				const size_t realLn = (sl - r_ind) + 1ull;
@@ -205,7 +211,7 @@ class SMAnsiString
 			}
 			return std::move(ret);
 		}
-		SMAnsiString& DeleteMyself(int Index, int Count)
+		SMAnsiString& DeleteMyself(size_t Index, size_t Count)
 		{
 			const size_t sl = strlen(data);
 			if ((Count > 0) && (Index < sl))
@@ -219,7 +225,7 @@ class SMAnsiString
 		static SMAnsiString smprintf(const char* format, ...)
 		{
 			if (!format) return "";
-			size_t bsz = strlen(format) + 16384ull + 1024ull;
+			size_t bsz = AlignedSize(strlen(format)+10240ull, STR_ALIGNMENT);
 			va_list ap;
 			va_start(ap, format);
 			char *buf = new char[bsz];
@@ -232,7 +238,7 @@ class SMAnsiString
 		{
 			if (format)
 			{
-				size_t bsz = strlen(format) + 16384ull + 1024ull;
+				size_t bsz = strlen(format) + 10240ull;
 				ReallocateIfNeeded(bsz);
 				va_list ap;
 				va_start(ap, format);
@@ -262,7 +268,7 @@ class SMAnsiString
 			memcpy(data, value.c_str(), bsz);
 			return *this;
 		}
-		SMAnsiString& operator=(SMAnsiString&& rvalue)
+		SMAnsiString& operator=(SMAnsiString&& rvalue) noexcept
 		{
 			if(data) delete[] data;
 			data = rvalue.data;
@@ -279,7 +285,7 @@ class SMAnsiString
 				ReallocateIfNeeded(slen);
 				memcpy(data, str, slen);
 			}
-			if (!data) Reallocate(STR_ALIGNMENT);
+			if (!data) Alloc(1ull);
 			data[slen] = '\0';
 			return *this;
 		}
@@ -341,75 +347,158 @@ class SMAnsiString
 
 		bool operator==(const SMAnsiString& Value) const
 		{
+			const char* _value = Value.data;
 			const size_t sl = strlen(data);
-			const char* src = Value.c_str();
+			const size_t vsl = strlen(_value);
 
 			// сначала проверяем длину строк, если они разные - нет смысла дальше сравнивать
-			if (sl != strlen(src)) return false;
+			if (sl != vsl) return false;
+			// если обе строки пустые, то они равны
+			if (sl == 0ull) return true;
 
-			// сравниваем посимвольно
-			for (size_t i = 0; i < sl; i++)
+			// за один такт можно сравнить сразу 8 байт
+			const size_t steplen = sizeof(uint64_t);
+			const size_t numiter = sl / steplen;
+			const size_t ost = sl % steplen;
+			const uint64_t * ptrL = reinterpret_cast<const uint64_t*>(_value);
+			const uint64_t * ptrP = reinterpret_cast<const uint64_t*>(data);
+			for (size_t i = 0; i < numiter; i++)
 			{
-				// если i-ые символы в строках не совпадают, возвращаем false
-				if (data[i] != src[i]) return false;
+				if (*ptrL != *ptrP)
+					return false;
+				ptrL++;
+				ptrP++;
 			}
-
-			// если строки равны, то программа дойдёт до этого места и вернёт true
+			if (ost)
+			{
+				// остатки сравниваем посимвольно
+				const char* cptrL = reinterpret_cast<const char*>(ptrL);
+				const char* cptrP = reinterpret_cast<const char*>(ptrP);
+				for (size_t i = 0; i < ost; i++)
+				{
+					if (*cptrL != *cptrP)
+						return false;
+					cptrL++;
+					cptrP++;
+				}
+			}
 			return true;
 		}
 		bool operator==(const char *Value) const
 		{
-			if (!Value) return false;
 			const size_t sl = strlen(data);
+			const size_t vsl = (Value)?strlen(Value):0ull;
 
 			// сначала проверяем длину строк, если они разные - нет смысла дальше сравнивать
-			if (sl != strlen(Value)) return false;
+			if (sl != vsl) return false;
+			// если обе строки пустые, то они равны
+			if (sl == 0ull) return true;
 
-			// сравниваем посимвольно
-			for (size_t i = 0; i < sl; i++)
+			// за один такт можно сравнить сразу 8 байт
+			const size_t steplen = sizeof(uint64_t);
+			const size_t numiter = sl / steplen;
+			const size_t ost = sl % steplen;
+			const uint64_t *ptrL = reinterpret_cast<const uint64_t*>(Value);
+			const uint64_t *ptrP = reinterpret_cast<const uint64_t*>(data);
+			for (size_t i = 0; i < numiter; i++)
 			{
-				// если i-ые символы в строках не совпадают, возвращаем false
-				if (data[i] != Value[i]) return false;
+				if (*ptrL != *ptrP)
+					return false;
+				ptrL++;
+				ptrP++;
 			}
-
-			// если строки равны, то программа дойдёт до этого места и вернёт true
+			if (ost)
+			{
+				// остатки сравниваем посимвольно
+				const char *cptrL = reinterpret_cast<const char*>(ptrL);
+				const char *cptrP = reinterpret_cast<const char*>(ptrP);
+				for (size_t i = 0; i < ost; i++)
+				{
+					if (*cptrL != *cptrP)
+						return false;
+					cptrL++;
+					cptrP++;
+				}
+			}
 			return true;
 		}
 
 		bool operator!=(const SMAnsiString& Value) const
 		{
+			const char* _value = Value.data;
 			const size_t sl = strlen(data);
-			const char* src = Value.c_str();
+			const size_t vsl = strlen(_value);
+			
 
 			// сначала проверяем длину строк, если они разные - нет смысла дальше сравнивать
-			if (sl != strlen(src)) return true;
+			if (sl != vsl) return true;
+			// если обе строки пустые, то они равны
+			if (sl == 0ull) return false;
 
-			// сравниваем посимвольно
-			for (size_t i = 0; i < sl; i++)
+			// за один такт можно сравнить сразу 8 байт
+			const size_t steplen = sizeof(uint64_t);
+			const size_t numiter = sl / steplen;
+			const size_t ost = sl % steplen;
+			const uint64_t * ptrL = reinterpret_cast<const uint64_t*>(_value);
+			const uint64_t * ptrP = reinterpret_cast<const uint64_t*>(data);
+			for (size_t i = 0; i < numiter; i++)
 			{
-				// если i-ые символы в строках не совпадают, возвращаем true
-				if (data[i] != src[i]) return true;
+				if (*ptrL != *ptrP)
+					return true;
+				ptrL++;
+				ptrP++;
 			}
-
-			// если строки равны, то программа дойдёт до этого места и вернёт false
+			if (ost)
+			{
+				// остатки сравниваем посимвольно
+				const char* cptrL = reinterpret_cast<const char*>(ptrL);
+				const char* cptrP = reinterpret_cast<const char*>(ptrP);
+				for (size_t i = 0; i < ost; i++)
+				{
+					if (*cptrL != *cptrP)
+						return true;
+					cptrL++;
+					cptrP++;
+				}
+			}
 			return false;
 		}
 		bool operator!=(const char* Value) const
 		{
-			if (!Value) return false;
 			const size_t sl = strlen(data);
+			const size_t vsl = (Value) ? strlen(Value) : 0ull;
 
 			// сначала проверяем длину строк, если они разные - нет смысла дальше сравнивать
-			if (sl != strlen(Value)) return true;
+			if (sl != vsl) return true;
+			// если обе строки пустые, то они равны
+			if (sl == 0ull) return false;
 
-			// сравниваем посимвольно
-			for (size_t i = 0; i < sl; i++)
+			// за один такт можно сравнить сразу 8 байт
+			const size_t steplen = sizeof(uint64_t);
+			const size_t numiter = sl / steplen;
+			const size_t ost = sl % steplen;
+			const uint64_t *ptrL = reinterpret_cast<const uint64_t*>(Value);
+			const uint64_t *ptrP = reinterpret_cast<const uint64_t*>(data);
+			for (size_t i = 0; i < numiter; i++)
 			{
-				// если i-ые символы в строках не совпадают, возвращаем true
-				if (data[i] != Value[i]) return true;
+				if (*ptrL != *ptrP)
+					return true;
+				ptrL++;
+				ptrP++;
 			}
-
-			// если строки равны, то программа дойдёт до этого места и вернёт false
+			if (ost)
+			{
+				// остатки сравниваем посимвольно
+				const char *cptrL = reinterpret_cast<const char*>(ptrL);
+				const char *cptrP = reinterpret_cast<const char*>(ptrP);
+				for (size_t i = 0; i < ost; i++)
+				{
+					if (*cptrL != *cptrP)
+						return true;
+					cptrL++;
+					cptrP++;
+				}
+			}
 			return false;
 		}
 

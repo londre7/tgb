@@ -1,6 +1,13 @@
 #include "socket.h"
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#else
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
 
-int SockConnect(int &SockFD, const SMAnsiString &IP, int Port)
+int SockConnect(SOCKTYPE &SockFD, const SMAnsiString &IP, int Port)
 {
 	struct sockaddr_in	servaddr;
 	
@@ -12,7 +19,7 @@ int SockConnect(int &SockFD, const SMAnsiString &IP, int Port)
 	return connect(SockFD, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }
 
-int SockConnectAsync(int &SockFD, const SMAnsiString &IP, int Port)
+int SockConnectAsync(SOCKTYPE &SockFD, const SMAnsiString &IP, int Port)
 {
 	struct sockaddr_in	servaddr;
 	
@@ -30,7 +37,7 @@ int SockConnectAsync(int &SockFD, const SMAnsiString &IP, int Port)
 	return connect(SockFD, (struct sockaddr *)&servaddr, sizeof(servaddr));
 }
 
-SSL* SockConnectWithSSL(int &SockFD, const SMAnsiString &IP, int Port, int &Err)
+SSL* SockConnectWithSSL(SOCKTYPE &SockFD, const SMAnsiString &IP, int Port, int &Err)
 {
 	SSL *ssl;
 	struct sockaddr_in	servaddr;
@@ -55,7 +62,7 @@ SSL* SockConnectWithSSL(int &SockFD, const SMAnsiString &IP, int Port, int &Err)
     ssl = SSL_new (ctx);
 	SSL_CTX_free(ctx);
 	
-	SSL_set_fd(ssl, SockFD);
+	SSL_set_fd(ssl, (int)SockFD);
 	s_err = SSL_connect(ssl);
 	
 	if(s_err <= 0)
@@ -80,18 +87,18 @@ bool Is_IPv4(const SMAnsiString &Host)
 		bppos = bp; \
 		++cb; 
 
-	const int hostLen = Host.length();
-	if ((hostLen < 7) || (hostLen > 15)) return false;
+	const size_t hostLen = Host.length();
+	if ((hostLen < 7ull) || (hostLen > 15ull)) return false;
 
 	char bp[16];
 	char *bppos = bp;
 	SMAnsiString b[4];
 	size_t cb = 0ull;
-	const int hlen = Host.length();
-	for (int i = 0; i < hlen; i++)
+	const size_t hlen = Host.length();
+	for (size_t i = 0; i < hlen; i++)
 	{
 		char &l = Host[i];
-		if (i == (hlen - 1))
+		if (i == (hlen - 1ull))
 		{
 			DIGIT;
 			DELIMITER;
@@ -109,25 +116,51 @@ bool Is_IPv4(const SMAnsiString &Host)
 		else
 			return false;
 	}
-	if (cb != 4) return false;
+	if (cb != 4ull) return false;
 	return true;
 }
 
+// TODO: сделать поддержку IPv6
 SMAnsiString GetIPFromHost(const SMAnsiString &Host)
 {
 	SMAnsiString ret;
-	if(!Is_IPv4(Host))
+	static char addrbuf[INET_ADDRSTRLEN];
+	if (!Is_IPv4(Host))
 	{
-		// получаем IP из DNS
-		struct hostent *hostinfo = gethostbyname(Host.c_str());
-		if(hostinfo == NULL) return "";  // dns not resolved
-		
-		for(int i=0; i<4; i++)
+		struct addrinfo* res = NULL;
+		if (!getaddrinfo(Host.c_str(), nullptr, nullptr, &res) && res) // succes return zero
 		{
-			if (i) ret += '.';
-			ret += SMAnsiString((int)uint8_t(hostinfo->h_addr_list[0][i]));
+			void* ptr = nullptr;
+			auto *addrstruct = res;
+			while (addrstruct)
+			{
+				ptr = nullptr;
+				switch (addrstruct->ai_family)
+				{
+					case AF_INET:
+						ptr = &((struct sockaddr_in*) addrstruct->ai_addr)->sin_addr;
+						break;
+					//case AF_INET6:
+					//	ptr = &((struct sockaddr_in6*) res->ai_addr)->sin6_addr;
+					//	break;
+				}
+				if (ptr)
+				{
+					inet_ntop(AF_INET, ptr, addrbuf, INET_ADDRSTRLEN);
+					if (strcmp(addrbuf, "0.0.0.0"))
+					{
+						ret = addrbuf;
+						break;
+					}
+				}	
+				addrstruct = addrstruct->ai_next;
+			}
+			freeaddrinfo(res);
 		}
+		else
+			CLEAR_STR(ret);
 	}
-	else ret = Host;
+	else
+		ret = Host;
 	return std::move(ret);
 }

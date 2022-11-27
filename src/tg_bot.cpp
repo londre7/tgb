@@ -1,8 +1,8 @@
 #include "tg_bot.h"
 
 // глобальные переменные
-SMAnsiString					g_ExeDir;				// путь к исполняемомму файлу
-uint64_t						g_CurrentUpdate = 0;	// текущее обработанное обновление
+SMAnsiString g_ExeDir;            // путь к исполняемомму файлу
+uint64_t     g_CurrentUpdate = 0; // текущее обработанное обновление
 
 SMAnsiString GetExeDir() { return g_ExeDir; }
 uint64_t GetCurrentUpdate() { return g_CurrentUpdate; }

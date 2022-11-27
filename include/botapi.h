@@ -11,7 +11,7 @@ class TGBOT_ARRAY_OF_ARRAY: public std::vector<std::vector<std::unique_ptr<T>>>
 	using uptr      = std::unique_ptr<T>;
 
 	private:
-		size_t current_row;
+		size_t current_row = 0ull;
 
 		inline void placeRow()
 		{
@@ -37,7 +37,7 @@ class TGBOT_ARRAY_OF_ARRAY: public std::vector<std::vector<std::unique_ptr<T>>>
 	public:
 		size_t GetCurrentRow() { return current_row; }
 
-		TGBOT_ARRAY_OF_ARRAY(): current_row(0ull) { placeRow(); }
+		TGBOT_ARRAY_OF_ARRAY() { placeRow(); }
 		TGBOT_ARRAY_OF_ARRAY(const TGBOT_ARRAY_OF_ARRAY<T> &arr) { copy(arr); }
 
 		size_t CreateRow() { placeRow(); return ++current_row; }
@@ -164,8 +164,8 @@ GetStdValueFromJSON(time_t,       jsonint_to_int<time_t>  );
 static inline void DoStartStream(SMAnsiString& s)
 {
 	if (s.IsEmpty()) s = '{';
-	else s[s.length() - 1] = '\0';
-	if (s.length() > 1) s += ',';
+	else s[s.length() - 1ull] = '\0';
+	if (s.length() > 1ull) s += ',';
 }
 
 template <typename T>
@@ -1423,7 +1423,7 @@ class TGBOT_Update : public TGBOT_API_Class
 		{
 			FreeAll();
 			InitAll();
-			GetValueFromJSON(ObjectEntry, "update_id",           UpdateId        );
+			GetValueFromJSON(ObjectEntry, "update_id",           UpdateId         );
 			GetValueFromJSON(ObjectEntry, "message",             Message          );
 			GetValueFromJSON(ObjectEntry, "edited_message",      EditedMessage    );
 			GetValueFromJSON(ObjectEntry, "channel_post",        ChannelPost      );

@@ -111,8 +111,8 @@ static SMAnsiString GetPressedBtnCaption(const TGBOT_CallbackQuery* RecvCallback
 void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 {
 	const SMAnsiString &callback_token = RecvCallback->Data;
-	const SMAnsiString callback_id = callback_token.Delete(32, callback_token.length());
-	const SMAnsiString callback_type = callback_token.Delete(0, 33);
+	const SMAnsiString callback_id = callback_token.Delete(32ull, callback_token.length());
+	const SMAnsiString callback_type = callback_token.Delete(0ull, 33ull);
 	SMAnsiString callback_params = "{}";
 
 	bool is_valid_callbacktype = false;

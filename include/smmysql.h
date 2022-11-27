@@ -12,17 +12,17 @@
 class SMMYSQL_Table
 {
 	public:
-		SMAnsiString** Cell;	// €чейки таблицы
-		size_t			Cols,
-			Rows;
+		SMAnsiString** Cell = nullptr;	// €чейки таблицы
+		size_t         Cols = 0ull;
+		size_t         Rows = 0ull;
 
-		SMMYSQL_Table() : Cell(NULL), Cols(0), Rows(0) {}
-		SMMYSQL_Table(size_t R, size_t C) : Cell(NULL) { Init(R, C); }
+		SMMYSQL_Table() {}
+		SMMYSQL_Table(size_t R, size_t C) { Init(R, C); }
 		~SMMYSQL_Table() { this->Free(); }
 
 		void Free()
 		{
-			if (this->Cell != NULL)
+			if (this->Cell != nullptr)
 			{
 				for (size_t i = 0; i < this->Rows; i++)
 				{

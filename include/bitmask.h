@@ -4,22 +4,22 @@
 #include <stdint.h>
 
 template <typename T>
-void SetBit(T& mask, int index)
+void SetBit(T& mask, size_t index)
 {
-	T temp = 1 << index;
+	T temp = T(1) << index;
 	mask = mask | temp;
 }
 template <typename T>
-void UnsetBit(T& mask, int index)
+void UnsetBit(T& mask, size_t index)
 {
-	T temp = 1 << index;
+	T temp = T(1) << index;
 	temp = ~temp;
 	mask = mask & temp;
 }
 template <typename T>
-bool GetBit(T mask, int index)
+bool GetBit(T mask, size_t index)
 {
-	T Temp = 1 << index;
+	T Temp = T(1) << index;
 	Temp = mask & Temp;
 	Temp = Temp >> index;
 	return Temp;

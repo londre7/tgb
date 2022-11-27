@@ -4,7 +4,7 @@
 pthread_t                  *upd_thread = nullptr;            // потоки для обработки обновлений
 std::queue<TGBOT_Update*>  *upd_thread_queue = nullptr;      // очередь для потоков-обработчиков
 std::multiset<uint64_t>    *upd_thread_queue_uids = nullptr; // здесь будем кэшировать UID для каждого обновления
-int                        *upd_queue_sizes = nullptr;       // длина каждой очереди
+size_t                     *upd_queue_sizes = nullptr;       // длина каждой очереди
 pthread_mutex_t            *upd_queue_mutex = nullptr;
 pthread_mutex_t            *upd_queue_mutex_uids = nullptr;
 
@@ -68,7 +68,7 @@ static bool SetStartFindTime(uint64_t uid)
 }
 void* FindThread::thrFunc(void* arg)
 {
-#define SEND_MSG_AND_CONTINUE(uid,msg) {tgbot_SendMessage(uid,msg);continue;}
+	#define SEND_MSG_AND_CONTINUE(uid,msg) {tgbot_SendMessage(uid,msg);continue;}
 	thr_par* thrpar = (thr_par*)arg;
 	while (true)
 	{
@@ -135,7 +135,7 @@ void* FindThread::thrFunc(void* arg)
 		else usleep(10000);
 	}
 	return nullptr;
-#undef SEND_MSG_AND_CONTINUE
+	#undef SEND_MSG_AND_CONTINUE
 }
 
 inline void FreeUpdateTreads()
@@ -145,6 +145,7 @@ inline void FreeUpdateTreads()
 	DELETE_ARRAY_OBJECT(upd_thread_queue_uids);
 	DELETE_ARRAY_OBJECT(upd_queue_sizes);
 	DELETE_ARRAY_OBJECT(upd_queue_mutex);
+	DELETE_ARRAY_OBJECT(upd_queue_mutex_uids);
 }
 void CreateUpdateThreads(int numthr)
 {
@@ -152,7 +153,7 @@ void CreateUpdateThreads(int numthr)
 
 	upd_thread_queue = new std::queue<TGBOT_Update*>[numthr];
 	upd_thread_queue_uids = new std::multiset<uint64_t>[numthr];
-	upd_queue_sizes = new int[numthr];
+	upd_queue_sizes = new size_t[numthr];
 	upd_thread = new pthread_t[numthr];
 	upd_queue_mutex = new pthread_mutex_t[numthr];
 	upd_queue_mutex_uids = new pthread_mutex_t[numthr];
@@ -205,8 +206,8 @@ bool PushToUpdQueue(TGBOT_Update *upd)
 		if (!finded)
 		{
 			// в таком случае находим самый незагруженный поток
-			int min_load_idx = 0;
-			for (int n = 1, min = upd_queue_sizes[0]; n < num_update_threads; n++)
+			size_t min_load_idx = 0;
+			for (size_t n = 1, min = upd_queue_sizes[0]; n < num_update_threads; n++)
 			{
 				if (upd_queue_sizes[n] < min)
 				{
@@ -247,8 +248,8 @@ static int CheckUserExistInDB(DB_User& usr, TGBOT_User* recv_user, time_t messag
 	usr.LastName = recv_user->LastName;
 	usr.LanguageCode = recv_user->LanguageCode;
 
-	const int rows = ret->Rows;
-	if (rows >= 1)
+	const size_t rows = ret->Rows;
+	if (rows >= 1ull)
 	{
 		usr.LastMessage = ret->Cell[0][6];
 		usr.PhoneNumber = ret->Cell[0][7];
@@ -261,7 +262,7 @@ static int CheckUserExistInDB(DB_User& usr, TGBOT_User* recv_user, time_t messag
 	{
 		usr.LastMessage = message_time;
 	}
-	return rows;
+	return (int)rows;
 }
 
 static bool AddUserToDB(const DB_User& usr)
@@ -289,7 +290,7 @@ static TGBOT_Update* GetUpdateFromThreadQueue(int thrid)
 	if (!upd_thread_queue[thrid].empty())
 	{
 		update = upd_thread_queue[thrid].front();
-		upd_thread_queue->pop();
+		upd_thread_queue[thrid].pop();
 		pthread_mutex_lock(&upd_queue_mutex_uids[thrid]);
 		auto val = upd_thread_queue_uids[thrid].find(GetChatIDFromUpdate(update));
 		if(val != upd_thread_queue_uids[thrid].end())
@@ -304,7 +305,6 @@ void* UpdThreadFunc(void *arg)
 {
 	int          thr_id=0;  // id потока
 	DB_User      u_recv;
-	MYSQL_RES    *res;
 	
 	// получаем id потока
 	int *arg_i = (int*)arg;
@@ -315,7 +315,7 @@ void* UpdThreadFunc(void *arg)
 	time_t curtime = time(NULL);
 
 	// инициализируем генератор случайных чисел
-	srand(curtime+thr_id);
+	srand(unsigned(curtime+(time_t)thr_id));
 	
 	while(true)
 	{

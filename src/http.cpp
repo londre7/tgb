@@ -40,7 +40,7 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 	}
 
 	HTTP_Response *resp = new HTTP_Response;
-	resp->ContentLength = 0;
+	resp->ContentLength = 0ull;
 	resp->ContentType = "";
 
 	// разбираем версию HTTP и код ошибки
@@ -124,7 +124,7 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 		if (breakflag == 1) break;
 	}
 
-	if (resp->ContentLength > 0)
+	if (resp->ContentLength > 0ull)
 	{
 		//resp->Content = "";
 		if (strlen(buffer) - stop_index != 0)
@@ -185,13 +185,14 @@ static HTTP_Response* RecvResponse(SSL *sock_ssl, int &Err)
 			}
 		}
 		// убираем /r/n в конце
-		if (resp->Content[resp->Content.length() - 2] == '\r')
-			resp->Content[resp->Content.length() - 2] = '\0';
+		if (resp->Content[resp->Content.length() - 2ull] == '\r')
+			resp->Content[resp->Content.length() - 2ull] = '\0';
 	}
 	
 	return resp;
 }
 
+// TODO: сделать поддержку IPv6
 HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, int& Err)
 {
 	// получаем IP-адрес из имени хоста
@@ -199,7 +200,7 @@ HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const S
 	if (ip_by_host.IsEmpty()) { Err = 1000; return NULL; }  // dns not resolved
 
 	// соединяемся с сервером
-	int sock;
+	SOCKTYPE sock;
 	int	socket_err;
 	SSL* sock_ssl = nullptr;
 	if (UseSSL)
@@ -238,12 +239,12 @@ HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const S
 	);
 	if (UseSSL)
 	{
-		socket_err = SSL_write(sock_ssl, req.c_str(), req.length());
+		socket_err = SSL_write(sock_ssl, req.c_str(), (int)req.length());
 		if (socket_err <= 0) { Err = 1002; return NULL; } // error sending
 	}
 	else
 	{
-		socket_err = send(sock, req.c_str(), req.length(), 0);
+		socket_err = send(sock, req.c_str(), (int)req.length(), 0);
 		if (socket_err == -1) { Err = 1002; return NULL; } // error sending
 	}
 
@@ -261,6 +262,7 @@ HTTP_Response* HTTP_Get(const SMAnsiString &Host, int Port, bool UseSSL, const S
 	return resp;
 }
 
+// TODO: сделать поддержку IPv6
 HTTP_Response* HTTP_Post(const SMAnsiString &Host, int Port, bool UseSSL, const SMAnsiString &HeaderHost, const SMAnsiString &Doc, const char *ContentType, void *Content, size_t ContentLength, int &Err)
 {
 	// получаем IP-адрес из имени хоста
@@ -268,7 +270,7 @@ HTTP_Response* HTTP_Post(const SMAnsiString &Host, int Port, bool UseSSL, const 
 	if(ip_by_host == "") { Err = 1000; return NULL; }  // dns not resolved
 	
 	// соединяемся с сервером
-	int	sock;
+	SOCKTYPE sock;
 	int	socket_err;
 	SSL* sock_ssl = nullptr;
 	if(UseSSL) 
@@ -324,12 +326,12 @@ HTTP_Response* HTTP_Post(const SMAnsiString &Host, int Port, bool UseSSL, const 
 
 	if(UseSSL)
 	{
-		socket_err = SSL_write(sock_ssl, send_msg.GetBufferPtr(), send_msg.GetWritePos());
+		socket_err = SSL_write(sock_ssl, send_msg.GetBufferPtr(), (int)send_msg.GetWritePos());
 		if(socket_err <= 0) { Err = 1002; return NULL; } // error sending
 	}
 	else
 	{
-		socket_err = send(sock, REINTERPRET_CAST_CHARPTR(send_msg.GetBufferPtr()), send_msg.GetWritePos(), 0);
+		socket_err = send(sock, REINTERPRET_CAST_CHARPTR(send_msg.GetBufferPtr()), (int)send_msg.GetWritePos(), 0);
 		if(socket_err == -1) { Err = 1002; return NULL; } // error sending
 	}
 	

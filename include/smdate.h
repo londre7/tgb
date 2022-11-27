@@ -10,11 +10,11 @@
 class SMDateTime	// дата и время
 {
 	protected:
-		time_t _LowLevelTime;
+		time_t _LowLevelTime = time(NULL);
 
 	public:
 		// конструткоры
-		SMDateTime(): _LowLevelTime(time(NULL)) {}
+		SMDateTime() {}
 		SMDateTime(const SMDateTime& dt) { _LowLevelTime = dt._LowLevelTime; }
 		SMDateTime(time_t Tm) { _LowLevelTime = Tm; }
 		SMDateTime(int year, int month, int day, int hour, int min, int sec)

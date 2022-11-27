@@ -9,10 +9,10 @@
 class SMKeyList
 {
 	protected:
-		uint64_t *data;      // указатель на память с данными
-		size_t   allocsize;  // количество выделенных элементов
-		size_t   numelem;    // количетсво реальных элементов
-		size_t   mempadding; // ??
+		uint64_t *data      = nullptr;         // указатель на память с данными
+		size_t   allocsize  = 0ull;            // количество выделенных элементов
+		size_t   numelem    = 0ull;            // количетсво реальных элементов
+		size_t   mempadding = KEYLIST_PADDING; // резервируем некоторое количество элементов
 
 		// управляем памятью
 		void alloc(size_t sz, size_t _numelem = 0);
@@ -20,7 +20,7 @@ class SMKeyList
 		void realloc(size_t newsize);
 
 	public:
-		SMKeyList(void) { mempadding = KEYLIST_PADDING; alloc(mempadding); }
+		SMKeyList(void) { alloc(mempadding); }
 		SMKeyList(size_t _mempadding) { mempadding = _mempadding; alloc(mempadding); }
 		SMKeyList(const SMKeyList& list);
 

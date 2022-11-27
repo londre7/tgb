@@ -25,14 +25,14 @@ enum
 #ifdef _WIN32
 void usleep(unsigned int usec);
 #endif
-SMAnsiString ExtractFilePath(SMAnsiString FileName);
-bool LoadLastBotState(SMAnsiString FileName);
-bool SaveLastBotState(SMAnsiString FileName);
+SMAnsiString ExtractFilePath(const SMAnsiString &FileName);
+bool LoadLastBotState(const SMAnsiString &FileName);
+bool SaveLastBotState(const SMAnsiString &FileName);
 void WriteMessage(const SMAnsiString &Message, int Color=TGB_TEXTCOLOR_DEFAULT);
 void WriteFormatMessage(const SMAnsiString& Format, int Color, ...);
-void AppendStringToFile(SMAnsiString filename, const SMAnsiString& Message);
-StringList* LoadTextFromFile(SMAnsiString FileName);
-bool LoadTextFromFile_v2(SMAnsiString FileName, StringList*Output);
+void AppendStringToLog(const SMAnsiString &filename, const SMAnsiString& Message);
+StringList* LoadTextFromFile(const SMAnsiString &FileName);
+bool LoadTextFromFile_v2(const SMAnsiString &FileName, StringList*Output);
 SMAnsiString TimeDifferenceString(time_t Time1, time_t Time2);
 void Hexlify(char* hex, const unsigned char* bin, int len);
 SMAnsiString ParamsToJSON(const StringList& keys, const StringList &values);
