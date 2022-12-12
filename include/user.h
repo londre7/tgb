@@ -47,16 +47,18 @@ enum // состояния пользователей
 	USRSTATE_SETNOTIFY_INPUT_NBIT,
 	USRSTATE_SETNOTIFY_INPUT_VALUE,
 	USRSTATE_SENDMSG_INPUT_UID,
-	USRSTATE_SENDMSG_INPUT_MSG
+	USRSTATE_SENDMSG_INPUT_MSG,
+	USRSTATE_MESSAGE_REPLY
 };
 
 // тут объявляем списки параметров для тех состояний, где они нужны (реализация в user.cpp)
-#define GET_USRSTATE_PARAMS(json_str, params_def) StringList gupvalues; ParamsFromJSON(json_str, params_def, gupvalues)
+#define GET_USRSTATE_PARAMS(vec, json_str, params_def) StringList vec; ParamsFromJSON(json_str, params_def, vec)
 #define USRSTATE_INIT_PARAMS(params_def) StringList &pnames = params_def; StringList pvalues
 extern StringList  USRSTATE_CHAT_params;
 extern StringList  USRSTATE_SETPERMISSION_INPUT_NBIT_params;
 extern StringList  USRSTATE_SETPERMISSION_INPUT_VALUE_params;
 extern StringList  &USRSTATE_SENDMSG_INPUT_MSG_params;
+extern StringList  USRSTATE_MESSAGE_REPLY_params;
 
 class DB_User
 {
@@ -108,6 +110,8 @@ class DB_User
 		DB_User& operator=(const DB_User &Itm);
 		bool operator==(const DB_User &Itm);
 };
+
+using DBUserPtr = std::unique_ptr<DB_User>;
 
 bool IsSuperUser(const SMAnsiString& username);
 bool SetUserState(uint64_t uid, int state, const SMAnsiString &json_str);

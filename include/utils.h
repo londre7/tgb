@@ -5,6 +5,9 @@
 
 typedef std::vector<SMAnsiString>          StringList;
 
+using StringListPtr                = std::unique_ptr<StringList>;
+using HTTPResponsePtr              = std::unique_ptr<HTTP_Response>;
+
 #define DELETE_SINGLE_OBJECT(_mptr) if(_mptr != nullptr) { delete _mptr; _mptr = nullptr; }
 #define DELETE_ARRAY_OBJECT(_mptr) if(_mptr != nullptr) { delete[] _mptr; _mptr = nullptr; }
 

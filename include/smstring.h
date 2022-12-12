@@ -150,7 +150,7 @@ class SMAnsiString
 			data[idx] = c;
 			return idx;
 		}
-		SMAnsiString GetLowerCase()
+		SMAnsiString GetLowerCase() const
 		{
 			SMAnsiString Ret(data);
 			const size_t rl = strlen(data);

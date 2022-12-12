@@ -23,6 +23,7 @@ class FindThread
 };
 FindThread* GetFindThread();
 
+int GetNumProcessors(void);
 int GetNumUpdThreads(void);
 inline void FreeUpdateTreads();
 void CreateUpdateThreads(int numthr);

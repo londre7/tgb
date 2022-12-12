@@ -33,6 +33,6 @@ SMAnsiString GetDayWeekStr(int dw);
 
 void ShowMessage(bool SrcIsEmpty, uint64_t ChatID, uint64_t MessageID, const SMAnsiString& Text, TGBOT_InlineKeyboardMarkup* Keyboard=nullptr);
 
-TGBOT_InlineKeyboardMarkup* MakeInlineKeyboardFromDef(const std::vector<InlineKeyboardDef> &keyboardDef, const std::vector<StringList*>& params);
+TGBOT_InlineKeyboardMarkup* MakeInlineKeyboardFromDef(const std::vector<InlineKeyboardDef> &keyboardDef, const std::vector<std::unique_ptr<StringList>> &params);
 
 #endif

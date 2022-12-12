@@ -51,6 +51,7 @@ void TGBOT_Message::InitAll()
 	RESET_ULONGLONG(MessageId);
 	RESET_ULONGLONG(MessageThreadId);
 	RESET_PTR(From);
+	RESET_PTR(SenderChat);
 	RESET_INT(Date);
 	RESET_PTR(Chat);
 	RESET_PTR(ForwardFrom);
@@ -62,33 +63,93 @@ void TGBOT_Message::InitAll()
 	RESET_BOOL(IsTopicMessage);
 	RESET_BOOL(IsAutomaticForward);
 	RESET_PTR(ReplyToMessage);
+	RESET_PTR(ViaBot);
 	RESET_INT(EditDate);
 	RESET_BOOL(HasProtectedContent);
 	CLEAR_STR(MediaGroupId);
 	CLEAR_STR(AuthorSignature);
 	CLEAR_STR(Text);
+	RESET_PTR(Animation);
+	RESET_PTR(Audio);
+	RESET_PTR(Document);
 	RESET_PTR(Sticker);
+	RESET_PTR(Video);
+	RESET_PTR(VideoNote);
+	RESET_PTR(Voice);
 	CLEAR_STR(Caption);
 	RESET_PTR(Contact);
+	RESET_PTR(Dice);
+	RESET_PTR(Game);
+	RESET_PTR(Poll);
+	RESET_PTR(Venue);
+	RESET_PTR(Location);
 	CLEAR_STR(NewChatTitle);
+	RESET_PTR(LeftChatMember);
 	RESET_BOOL(DeleteChatPhoto);
 	RESET_BOOL(GroupChatCreated);
 	RESET_BOOL(SupergroupChatCreated);
 	RESET_BOOL(ChannelChatCreated);
+	RESET_PTR(MessageAutoDeleteTimerChanged);
+	RESET_ULONGLONG(MigrateToChatId);
+	RESET_ULONGLONG(MigrateFromChatId);
+	RESET_PTR(PinnedMessage);
+	RESET_PTR(Invoice);
+	RESET_PTR(SuccessfulPayment);
+	RESET_PTR(PassportData);
+	RESET_PTR(ProximityAlertTriggered);
+	RESET_PTR(ForumTopicCreated);
 	RESET_PTR(ReplyMarkup);
+	RESET_PTR(ForumTopicClosed);
+	RESET_PTR(ForumTopicReopened);
+	RESET_PTR(VideoChatScheduled);
+	RESET_PTR(VideoChatStarted);
+	RESET_PTR(VideoChatEnded);
+	RESET_PTR(VideoChatParticipantsInvited);
+	RESET_PTR(WebAppData);
 }
 void TGBOT_Message::FreeAll()
 {
 	Entities.clear();
 	Photo.clear();
-	DELETE_SINGLE_OBJECT(this->Chat);
-	DELETE_SINGLE_OBJECT(this->ForwardFrom);
-	DELETE_SINGLE_OBJECT(this->ForwardFromChat);
-	DELETE_SINGLE_OBJECT(this->ReplyToMessage);
-	DELETE_SINGLE_OBJECT(this->From);
-	DELETE_SINGLE_OBJECT(this->Contact);
-	DELETE_SINGLE_OBJECT(this->Sticker);
-	DELETE_SINGLE_OBJECT(this->ReplyMarkup);
+	CaptionEntities.clear();
+	NewChatMembers.clear();
+	NewChatPhoto.clear();
+	DELETE_SINGLE_OBJECT(Chat);
+	DELETE_SINGLE_OBJECT(SenderChat);
+	DELETE_SINGLE_OBJECT(ForwardFrom);
+	DELETE_SINGLE_OBJECT(ForwardFromChat);
+	DELETE_SINGLE_OBJECT(ReplyToMessage);
+	DELETE_SINGLE_OBJECT(ViaBot);
+	DELETE_SINGLE_OBJECT(From);
+	DELETE_SINGLE_OBJECT(Contact);
+	DELETE_SINGLE_OBJECT(Sticker);
+	DELETE_SINGLE_OBJECT(ReplyMarkup);
+	DELETE_SINGLE_OBJECT(Animation);
+	DELETE_SINGLE_OBJECT(Audio);
+	DELETE_SINGLE_OBJECT(Document);
+	DELETE_SINGLE_OBJECT(Video);
+	DELETE_SINGLE_OBJECT(VideoNote);
+	DELETE_SINGLE_OBJECT(Voice);
+	DELETE_SINGLE_OBJECT(Dice);
+	DELETE_SINGLE_OBJECT(Game);
+	DELETE_SINGLE_OBJECT(Poll);
+	DELETE_SINGLE_OBJECT(Venue);
+	DELETE_SINGLE_OBJECT(Location);
+	DELETE_SINGLE_OBJECT(LeftChatMember);
+	DELETE_SINGLE_OBJECT(MessageAutoDeleteTimerChanged);
+	DELETE_SINGLE_OBJECT(PinnedMessage);
+	DELETE_SINGLE_OBJECT(Invoice);
+	DELETE_SINGLE_OBJECT(SuccessfulPayment);
+	DELETE_SINGLE_OBJECT(PassportData);
+	DELETE_SINGLE_OBJECT(ProximityAlertTriggered);
+	DELETE_SINGLE_OBJECT(ForumTopicCreated);
+	DELETE_SINGLE_OBJECT(ForumTopicClosed);
+	DELETE_SINGLE_OBJECT(ForumTopicReopened);
+	DELETE_SINGLE_OBJECT(VideoChatScheduled);
+	DELETE_SINGLE_OBJECT(VideoChatStarted);
+	DELETE_SINGLE_OBJECT(VideoChatEnded);
+	DELETE_SINGLE_OBJECT(VideoChatParticipantsInvited);
+	DELETE_SINGLE_OBJECT(WebAppData);
 }
 
 bool tgbot_GetUpdates(std::vector<TGBOT_Update*> &updates, uint64_t offset)
@@ -165,6 +226,16 @@ uint64_t GetChatIDFromUpdate(TGBOT_Update* Upd)
 	if (Upd->ChannelPost != nullptr) return Upd->ChannelPost->Chat->Id;
 	if (Upd->EditedChannelPost != nullptr) return Upd->EditedChannelPost->Chat->Id;
 	return 0ull;
+}
+
+TGBOT_User* GetUserFromUpdate(TGBOT_Update* Upd)
+{
+	if (Upd->CallbackQuery != nullptr) return Upd->CallbackQuery->From;
+	if (Upd->Message != nullptr) return Upd->Message->From;
+	if (Upd->EditedMessage != nullptr) return Upd->EditedMessage->From;
+	if (Upd->ChannelPost != nullptr) return Upd->ChannelPost->From;
+	if (Upd->EditedChannelPost != nullptr) return Upd->EditedChannelPost->From;
+	return nullptr;
 }
 
 TGBOT_KeyboardButton::TGBOT_KeyboardButton(const TGBOT_KeyboardButton* val)

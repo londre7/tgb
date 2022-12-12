@@ -10,16 +10,17 @@ struct
 CallbackDef[] =
 {
 	// callback_data                  обработчик                           параметры для обработки callback    
-	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        nullptr },
-	{ CALLBACK_CMDLIST,               cq_processing_cmdlist,               nullptr },
-	{ CALLBACK_FIND,                  cq_processing_find,                  nullptr },
-	{ CALLBACK_ID,                    cq_processing_id,                    nullptr },
+	{ CALLBACK_PRIVATE_POLICY,        cq_processing_private_policy,        nullptr                           },
+	{ CALLBACK_CMDLIST,               cq_processing_cmdlist,               nullptr                           },
+	{ CALLBACK_FIND,                  cq_processing_find,                  nullptr                           },
+	{ CALLBACK_ID,                    cq_processing_id,                    nullptr                           },
+	{ CALLBACK_REPLY_TO_SENDMSG,      cq_processing_reply_to_sendmsg,      &CallbackParamsDef_ReplyToSendMsg },
 };
 
 // параметры для callback'ов
-StringList CallbackParamsDef_About =
+StringList CallbackParamsDef_ReplyToSendMsg =
 {
-	"chapter"
+	"admin_uid" // UID администратора
 };
 
 static SMAnsiString GenerateCallbackID()
@@ -38,6 +39,25 @@ static SMAnsiString GenerateCallbackID()
 	SHA256(r, sizeof(r), callback_hash_bin);
 	Hexlify(callback_hash, callback_hash_bin, 16);
 	return SMAnsiString(callback_hash);
+}
+
+// для каждой callback кнопки задаём список параметров, который представлен StringList, количество таких StringList == количество кнопок
+std::vector<std::unique_ptr<StringList>> MakeCallbackParamValues(const std::vector<InlineKeyboardDef>& KbDecl, int dummy, ...)
+{
+	std::vector<std::unique_ptr<StringList>> ret;
+
+	va_list variadic_p;
+	va_start(variadic_p, dummy);
+	const size_t numbtns = KbDecl.size();
+	for (size_t i = 0; i < numbtns; i++)
+	{
+		std::initializer_list<SMAnsiString> p_arg = va_arg(variadic_p, std::initializer_list<SMAnsiString>);
+		std::unique_ptr<StringList> uptr((p_arg.size())?new StringList(p_arg):nullptr);
+		ret.push_back(std::move(uptr));
+	}
+	va_end(variadic_p);
+
+	return std::move(ret);
 }
 
 // для одной кнопки
@@ -60,7 +80,7 @@ SMAnsiString MakeCallbackData(const SMAnsiString &type, StringList *keys, String
 	return SMAnsiString::smprintf("%s_%s", C_STR(id), C_STR(type));
 }
 // для пачки
-bool RegisterCallbackData(const StringList &callback, const std::vector<StringList*>& params, const std::vector<StringList*>& values)
+bool RegisterCallbackData(const StringList &callback, const std::vector<StringList*>& params, const std::vector<std::unique_ptr<StringList>> &values)
 {
 	auto MAKE_SQL_VALUE = [](const SMAnsiString & callback, const StringList * keys, const StringList * values)->SMAnsiString
 	{
@@ -86,7 +106,7 @@ bool RegisterCallbackData(const StringList &callback, const std::vector<StringLi
 		if (!paramslist) 
 			continue;
 		if (values_cnt++) querystr += ",";
-		querystr += MAKE_SQL_VALUE(callback.at(i), paramslist, values.at(i));
+		querystr += MAKE_SQL_VALUE(callback.at(i), paramslist, values.at(i).get());
 	}
 
 	return (values_cnt)?InsertToDB(querystr):true;
@@ -110,6 +130,8 @@ static SMAnsiString GetPressedBtnCaption(const TGBOT_CallbackQuery* RecvCallback
 
 void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 {
+	WriteFormatMessage(SYSTEMMSG_RECV_CALLBACK_QUERY, TGB_TEXTCOLOR_YELLOW, C_STR(RecvCallback->Data), C_STR(RecvCallback->From->Username), C_STR(RecvCallback->From->FirstName));
+
 	const SMAnsiString &callback_token = RecvCallback->Data;
 	const SMAnsiString callback_id = callback_token.Delete(32ull, callback_token.length());
 	const SMAnsiString callback_type = callback_token.Delete(0ull, 33ull);
@@ -121,7 +143,7 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 		if (callback_type == callback.token)
 		{
 			// лезем в БД за параметрами callback
-			std::unique_ptr<SMMYSQL_Table> CallbackTbl
+			MySQLTablePtr CallbackTbl
 			(
 				QueryFromDB
 				(
@@ -179,7 +201,6 @@ void RunCallbackProc(TGBOT_CallbackQuery* RecvCallback, DB_User &dbusrinfo)
 
 // частоповторяющиеся куски кода
 #define CHECK_USRSTATE(dbuser, state) if(dbuser.State != state) { return; }
-#define GET_CALLBACK_PARAMS(params_def) StringList param_values; ParamsFromJSON(Params, params_def, param_values)
 #define CALLBACK_INIT_PARAMS(params_def) StringList *cpnames = params_def; StringList cpvalues
 #define CALLBACK_REINIT_PARAMS(params_def) cpnames = params_def; cpvalues.clear()
 
@@ -222,8 +243,26 @@ void cq_processing_id(CQ_PROCESSING_PARAMS)
 	RunProcCmd("/id", "", Message, dbusrinfo);
 }
 
+void cq_processing_reply_to_sendmsg(CQ_PROCESSING_PARAMS)
+{
+	CHECK_USRSTATE_FREE(dbusrinfo, Message->Chat->Id);
+	const SMAnsiString &admin_uid = Params.at(0);
+	DBUserPtr admin(GetUserByUID(static_cast<uint64_t>(admin_uid)));
+	if (!admin)
+		SEND_MSG_AND_RETURN(dbusrinfo.UID, BOTMSG_INTERNAL_ERROR);
+
+	USRSTATE_INIT_PARAMS(USRSTATE_MESSAGE_REPLY_params);
+	pvalues.push_back(admin_uid);
+	SetUserState(dbusrinfo, USRSTATE_MESSAGE_REPLY, ParamsToJSON(pnames, pvalues));
+
+	SMAnsiString msg = SMAnsiString::smprintf
+	(
+		BOTMSG_INPUT_MSGTEXT,
+		C_STR(MakeFullUserName(admin.get(), true))
+	);
+	SEND_MSG_AND_RETURN_WITH_BTN(dbusrinfo.UID, msg, REPLYBTN_CAPTION_CANCEL);
+}
+
 #undef CHECK_USRSTATE
-#undef SEND_MSG_AND_RETURN
-#undef GET_CALLBACK_PARAMS
-#undef USRSTATE_INIT_PARAMS
 #undef CALLBACK_INIT_PARAMS
+#undef CALLBACK_REINIT_PARAMS

@@ -32,6 +32,13 @@
 #define STR_DONATIONS_REQUSITS            "🔗 <b>Криптовалюта:</b>\n"\
                                           "ETH, USDT <code>0xC63ccE61D7cD81F137229D4cE0D6453c0AE2E655</code>"
 
+#define STR_HELPMSG                       "📜 <b>Список команд</b>:\n\n"\
+                                          "<b>/cmdlist</b> - вывести список доступных команд;\n"\
+                                          "<b>/find</b> - запуск поиска собеседника\n"\
+                                          "<b>/cancel</b> - отменить поиск\n"\
+                                          "<b>/stop</b> - завершить беседу\n"\
+                                          "<b>/id</b> - показать мой ID"
+
 // текстовые сообщения от бота
 #define BOTMSG_INTERNAL_ERROR             "Не удалось завершить операцию. Внутренняя ошибка."
 #define BOTMSG_USR_NO_STATE_FREE          "Недоступно. Сначала завершите текущую операцию!"
@@ -72,12 +79,15 @@
 #define BOTMSG_USER_ID                    "Ваш ID: %llu"
 #define BOTMSG_INPUT_MSGTEXT              "Введите текст сообщения для %s. Для отмены введи <i>/cancel</i>"
 #define BOTMSG_FROM_ADMIN                 "Сообщение от администратора %s:\n\n%s"
+#define BOTMSG_FROM_USER                  "%s в ответ на Ваше сообщение:\n\n%s"
+#define BOTMSG_USER_IS_BUSY               "Пользователь сейчас не может принять сообщение. Повторите попытку позже."
 
 // названия INLINE кнопок
-#define INLINEBTN_CAPTION_PRIVATE_POLICY  "Политика конфиденциальности"
-#define INLINEBTN_CAPTION_CMDLIST         "Список команд"
-#define INLINEBTN_CAPTION_FIND            "✈️ Искать"
-#define INLINEBTN_CAPTION_ID              "Мой ID"
+#define INLINEBTN_CAPTION_PRIVATE_POLICY   "Политика конфиденциальности"
+#define INLINEBTN_CAPTION_CMDLIST          "Список команд"
+#define INLINEBTN_CAPTION_FIND             "✈️ Искать"
+#define INLINEBTN_CAPTION_ID               "Мой ID"
+#define INLINEBTN_CAPTION_REPLY_TO_SENDMSG "💬 Ответить"
 
 // названия REPLY кнопок
 #define REPLYBTN_CAPTION_FIND             INLINEBTN_CAPTION_FIND

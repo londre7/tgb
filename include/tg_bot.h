@@ -2,7 +2,7 @@
 #define TGBOT_MAIN_HEADER
 
 #ifdef _MSC_VER
-#pragma warning(disable : 4996)
+#pragma warning(disable : 4996) // socket deprecated warnings
 #endif
 
 #include <iostream>
@@ -48,6 +48,7 @@
 #include "parser.h"
 #include "bitmask.h"
 #include "chat.h"
+#include "processing_update.h"
 
 #define TGBOT_APPTITLE				"Telegram Bot"
 #define TGBOT_VERSION 				"0.1.1"

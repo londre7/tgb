@@ -16,6 +16,10 @@ StringList USRSTATE_SETPERMISSION_INPUT_VALUE_params =
 	"nbit"
 };
 StringList &USRSTATE_SENDMSG_INPUT_MSG_params = USRSTATE_SETPERMISSION_INPUT_NBIT_params;
+StringList USRSTATE_MESSAGE_REPLY_params =
+{
+	"admin_uid"
+};
 
 // права пользователей
 static StringList usrAccessStrList =

@@ -44,10 +44,10 @@ SMMYSQL_Table* sm_mysql_query_v3(const SMAnsiString &Host, const SMAnsiString &D
 	return table;
 }
 
-std::vector<std::unique_ptr<SMMYSQL_Table>> sm_mysql_query_list(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const std::vector<SMAnsiString> &queryList)
+std::vector<MySQLTablePtr> sm_mysql_query_list(const SMAnsiString &Host, const SMAnsiString &DBUser, const SMAnsiString &DBPassword, const SMAnsiString &DBName, const std::vector<SMAnsiString> &queryList)
 {
 	#define PUSH_BACK_AND_CONTINUE(vec, obj) { vec.push_back(obj); continue; }
-	std::vector<std::unique_ptr<SMMYSQL_Table>> ret;
+	std::vector<MySQLTablePtr> ret;
 
 	const size_t numquery = queryList.size();
 	if (!numquery) return std::move(ret);
@@ -82,7 +82,7 @@ std::vector<std::unique_ptr<SMMYSQL_Table>> sm_mysql_query_list(const SMAnsiStri
 		else
 			table = new SMMYSQL_Table;
 
-		std::unique_ptr<SMMYSQL_Table> ptr(table);
+		MySQLTablePtr ptr(table);
 		ret.push_back(std::move(ptr));
 		mysql_free_result(res);
 	}
@@ -163,7 +163,7 @@ uint64_t sm_mysql_query_insert_ret_id(const SMAnsiString &Host, const SMAnsiStri
 	if (mysql_num_rows(ret) > 0)
 	{
 		MYSQL_ROW row;
-		std::unique_ptr<SMMYSQL_Table> table(new SMMYSQL_Table(mysql_num_rows(ret), mysql_num_fields(ret)));
+		MySQLTablePtr table(new SMMYSQL_Table(mysql_num_rows(ret), mysql_num_fields(ret)));
 		for (size_t i = 0; row = mysql_fetch_row(ret); i++)
 		{
 			for (size_t j = 0; j < table->Cols; j++)

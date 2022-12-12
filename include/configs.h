@@ -81,7 +81,7 @@ class BotConfStruct : public BaseConf
 			{ TelegramHost,     "telegram_api_host",  CPTYPE_STRING, "api.telegram.org" },
 			{ TelegramPort,     "telegram_api_port",  CPTYPE_INT,    "443"              },
 			{ UseSSL,           "use_ssl",            CPTYPE_INT,    "1"                },
-			{ NumUpdateThreads, "num_update_threads", CPTYPE_INT,    "2"                },
+			{ NumUpdateThreads, "num_update_threads", CPTYPE_INT,    "0"                },
 			{ DBHost,           "db_host",            CPTYPE_STRING, "localhost"        },
 			{ DBUser,           "db_user",            CPTYPE_STRING, "root"             },
 			{ DBPassword,       "db_password",        CPTYPE_STRING, ""                 },

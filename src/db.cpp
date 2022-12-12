@@ -39,7 +39,7 @@ SMMYSQL_Table* QueryFromDB(const SMAnsiString& query)
 	);
 }
 
-std::vector<std::unique_ptr<SMMYSQL_Table>> QueryFromDB(const StringList& queryList)
+std::vector<MySQLTablePtr> QueryFromDB(const StringList& queryList)
 {
 	BotConfStruct* bot_conf = GetBotConf();
 	return sm_mysql_query_list

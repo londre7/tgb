@@ -39,6 +39,7 @@
     <ClCompile Include="..\json\value.c" />
     <ClCompile Include="..\src\parser.cpp" />
     <ClCompile Include="..\src\processing_commands.cpp" />
+    <ClCompile Include="..\src\processing_update.cpp" />
     <ClCompile Include="..\src\smkeylist.cpp" />
     <ClCompile Include="..\src\smmysql.cpp" />
     <ClCompile Include="..\src\socket.cpp" />
@@ -58,6 +59,7 @@
     <ClInclude Include="..\include\custombuffer.h" />
     <ClInclude Include="..\include\db.h" />
     <ClInclude Include="..\include\http.h" />
+    <ClInclude Include="..\include\processing_update.h" />
     <ClInclude Include="..\json\hashtable.h" />
     <ClInclude Include="..\json\jansson.h" />
     <ClInclude Include="..\json\jansson_config.h" />
@@ -154,7 +156,7 @@
       <PreprocessorDefinitions>HAVE_STRUCT_TIMESPEC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>
       </AdditionalOptions>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -1,6 +1,6 @@
 .PHONY: all clean install uninstall
 
-INSTALL_PATH=/root/tg_bot
+INSTALL_PATH=$(HOME)/tg_bot
 MODULE_NAME=tg_bot
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -12,7 +12,7 @@ INCLUDE_PATH=-I/usr/include -Iinclude -I$(mkfile_dir)
 LIBRARY_PATH=-L/usr/lib64 -L/usr/lib64/mysql
 LIBS=-lpthread -lssl -lcrypto -lmysqlclient -ldl
 
-MKLIST=src/tg_bot.o json/dump.o json/error.o json/hashtable.o json/hashtable_seed.o json/load.o json/memory.o json/pack_unpack.o json/strbuffer.o json/strconv.o json/utf.o json/value.o src/http.o src/socket.o src/user.o src/utils.o src/botutils.o src/configs.o src/processing_commands.o src/threads.o src/callback.o src/smmysql.o src/botapi.o src/parser.o src/db.o src/smkeylist.o src/chat.o
+MKLIST=src/tg_bot.o json/dump.o json/error.o json/hashtable.o json/hashtable_seed.o json/load.o json/memory.o json/pack_unpack.o json/strbuffer.o json/strconv.o json/utf.o json/value.o src/http.o src/socket.o src/user.o src/utils.o src/botutils.o src/configs.o src/processing_commands.o src/threads.o src/callback.o src/smmysql.o src/botapi.o src/parser.o src/db.o src/smkeylist.o src/chat.o src/processing_update.o
 	
 all: tg_bot
 	

@@ -44,61 +44,16 @@ SMAnsiString ExtractFilePath(const SMAnsiString &FileName)
 
 bool LoadLastBotState(const SMAnsiString &FileName)
 {
-	// размер файла
-	struct stat st;
-	stat(C_STR(FileName), &st);
-	off_t file_size = st.st_size;
-	
-	if(file_size == 0) 
-	{
-		SetCurrentUpdate(0);
-		return false;
-	}
-	
-	// открываем файл
-	std::ifstream file;
-	file.open(C_STR(FileName), std::ios::binary);
-	if(!file.is_open())
-	{
-		SetCurrentUpdate(0);
-		return false;
-	}
-	
-	// читаем файл
-	StringList file_strings;
-	char *fbuffer = new char[file_size+1];
-	char letter;
-	const size_t size_of_char = sizeof(letter);
-	size_t write_pos = 0;
-	for(off_t i=0; i<file_size; i++)
-	{
-		file.read(reinterpret_cast<char*>(&letter), size_of_char);
-		if(letter != '\n') 
-		{
-			if(i != (file_size-1))
-			{
-				fbuffer[write_pos] = letter;
-				write_pos++;
-			}
-			else
-			{
-				fbuffer[write_pos] = '\0';
-				file_strings.push_back(fbuffer);
-			}
-		}
-		else
-		{
-			fbuffer[write_pos] = '\0';
-			file_strings.push_back(fbuffer);
-			write_pos = 0;
-		}
-	}
+	std::ifstream	file;
+
+	file.open(C_STR(FileName));
+	if (!file.is_open()) return false;
+
+	uint64_t upd;
+	file >> upd;
+	SetCurrentUpdate(upd);
+
 	file.close();
-	delete[] fbuffer;
-	
-	// присваиваем параметры
-	SetCurrentUpdate(atoi(C_STR(file_strings[0])));
-	
 	return true;
 }
 

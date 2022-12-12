@@ -299,6 +299,34 @@ class TGBOT_InlineKeyboardButton;
 class TGBOT_ReplyKeyboardMarkup;
 class TGBOT_InlineKeyboardMarkup;
 class TGBOT_ForceReply;
+class TGBOT_Audio;
+class TGBOT_Document;
+class TGBOT_Video;
+class TGBOT_VideoNote;
+class TGBOT_Voice;
+class TGBOT_Dice;
+class TGBOT_Game;
+class TGBOT_PollOption;
+class TGBOT_Poll;
+class TGBOT_Venue;
+class TGBOT_MessageAutoDeleteTimerChanged;
+class TGBOT_Invoice;
+class TGBOT_ShippingAddress;
+class TGBOT_OrderInfo;
+class TGBOT_SuccessfulPayment;
+class TGBOT_PassportFile;
+class TGBOT_EncryptedCredentials;
+class TGBOT_EncryptedPassportElement;
+class TGBOT_PassportData;
+class TGBOT_ProximityAlertTriggered;
+class TGBOT_ForumTopicCreated;
+class TGBOT_ForumTopicClosed;
+class TGBOT_ForumTopicReopened;
+class TGBOT_VideoChatScheduled;
+class TGBOT_VideoChatStarted;
+class TGBOT_VideoChatEnded;
+class TGBOT_VideoChatParticipantsInvited;
+class TGBOT_WebAppData;
 class TGBOT_Message;
 class TGBOT_CallbackQuery;
 class TGBOT_Update;
@@ -407,64 +435,65 @@ class TGBOT_PhotoSize : public TGBOT_API_Class
 
 class TGBOT_Animation : public TGBOT_API_Class
 {
-	SMAnsiString    FileId;
-	SMAnsiString    FileUniqueId;
-	int             Width;
-	int             Height;
-	int             Duration;
-	TGBOT_PhotoSize *Thumb;
-	SMAnsiString    FileName;
-	SMAnsiString    MimeType;
-	long long       FileSize;
+	public:
+		SMAnsiString    FileId;
+		SMAnsiString    FileUniqueId;
+		int             Width;
+		int             Height;
+		int             Duration;
+		TGBOT_PhotoSize *Thumb;
+		SMAnsiString    FileName;
+		SMAnsiString    MimeType;
+		long long       FileSize;
 
-	ADD_CONSTRUCTORS(TGBOT_Animation)
-	ADD_DESTRUCTORS(TGBOT_Animation)
+		ADD_CONSTRUCTORS(TGBOT_Animation)
+		ADD_DESTRUCTORS(TGBOT_Animation)
 
-	virtual void InitAll() override
-	{
-		CLEAR_STR(FileId);
-		CLEAR_STR(FileUniqueId);
-		RESET_INT(Width);
-		RESET_INT(Height);
-		RESET_INT(Duration);
-		RESET_PTR(Thumb);
-		CLEAR_STR(FileName);
-		CLEAR_STR(MimeType);
-		RESET_LONGLONG(FileSize);
-	}
-	virtual void FreeAll() override
-	{
-		DELETE_SINGLE_OBJECT(Thumb);
-	}
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Width);
+			RESET_INT(Height);
+			RESET_INT(Duration);
+			RESET_PTR(Thumb);
+			CLEAR_STR(FileName);
+			CLEAR_STR(MimeType);
+			RESET_LONGLONG(FileSize);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Thumb);
+		}
 
-	virtual void FromJSON(json_t* ObjectEntry) override
-	{
-		FreeAll();
-		InitAll();
-		GetValueFromJSON(ObjectEntry, "file_id",        FileId);
-		GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
-		GetValueFromJSON(ObjectEntry, "width",          Width);
-		GetValueFromJSON(ObjectEntry, "height",         Height);
-		GetValueFromJSON(ObjectEntry, "duration",       Duration);
-		GetValueFromJSON(ObjectEntry, "thumb",          Thumb);
-		GetValueFromJSON(ObjectEntry, "file_name",      FileName);
-		GetValueFromJSON(ObjectEntry, "mime_type",      MimeType);
-		GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
-	}
-	virtual SMAnsiString ToJSON() const override
-	{
-		SMAnsiString ostream;
-		PutValueToJSON(ostream, "file_id",        FileId);
-		PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
-		PutValueToJSON(ostream, "width",          Width);
-		PutValueToJSON(ostream, "height",         Height);
-		PutValueToJSON(ostream, "duration",       Duration);
-		PutValueToJSON(ostream, "thumb",          Thumb);
-		PutValueToJSON(ostream, "file_name",      FileName);
-		PutValueToJSON(ostream, "mime_type",      MimeType);
-		PutValueToJSON(ostream, "file_size",      FileSize);
-		return std::move(ostream);
-	}
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId);
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "width",          Width);
+			GetValueFromJSON(ObjectEntry, "height",         Height);
+			GetValueFromJSON(ObjectEntry, "duration",       Duration);
+			GetValueFromJSON(ObjectEntry, "thumb",          Thumb);
+			GetValueFromJSON(ObjectEntry, "file_name",      FileName);
+			GetValueFromJSON(ObjectEntry, "mime_type",      MimeType);
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId);
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "width",          Width);
+			PutValueToJSON(ostream, "height",         Height);
+			PutValueToJSON(ostream, "duration",       Duration);
+			PutValueToJSON(ostream, "thumb",          Thumb);
+			PutValueToJSON(ostream, "file_name",      FileName);
+			PutValueToJSON(ostream, "mime_type",      MimeType);
+			PutValueToJSON(ostream, "file_size",      FileSize);
+			return std::move(ostream);
+		}
 };
 
 class TGBOT_MaskPosition : public TGBOT_API_Class
@@ -1220,39 +1249,1210 @@ class TGBOT_ForceReply : public TGBOT_API_Class
 		}
 };
 
+class TGBOT_Audio : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString     FileId;
+		SMAnsiString     FileUniqueId;
+		int              Duration;
+		SMAnsiString     Performer;
+		SMAnsiString     Title;
+		SMAnsiString     FileName;
+		SMAnsiString     MimeType;
+		size_t           FileSize;
+		TGBOT_PhotoSize* Thumb;
+
+		ADD_CONSTRUCTORS(TGBOT_Audio)
+		ADD_DESTRUCTORS(TGBOT_Audio)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Duration);
+			CLEAR_STR(Performer);
+			CLEAR_STR(Title);
+			CLEAR_STR(FileName);
+			CLEAR_STR(MimeType);
+			RESET_ULONGLONG(FileSize);
+			RESET_PTR(Thumb);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Thumb);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "duration",       Duration    );
+			GetValueFromJSON(ObjectEntry, "performer",      Performer   );
+			GetValueFromJSON(ObjectEntry, "title",          Title       );
+			GetValueFromJSON(ObjectEntry, "file_name",      FileName    );
+			GetValueFromJSON(ObjectEntry, "mime_type",      MimeType    );
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+			GetValueFromJSON(ObjectEntry, "thumb",          Thumb       );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "duration",       Duration    );
+			PutValueToJSON(ostream, "performer",      Performer   );
+			PutValueToJSON(ostream, "title",          Title       );
+			PutValueToJSON(ostream, "file_name",      FileName    );
+			PutValueToJSON(ostream, "mime_type",      MimeType    );
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			PutValueToJSON(ostream, "thumb",          Thumb       );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Document : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString     FileId;
+		SMAnsiString     FileUniqueId;
+		TGBOT_PhotoSize* Thumb;
+		SMAnsiString     FileName;
+		SMAnsiString     MimeType;
+		size_t           FileSize;
+
+		ADD_CONSTRUCTORS(TGBOT_Document)
+		ADD_DESTRUCTORS(TGBOT_Document)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_PTR(Thumb);
+			CLEAR_STR(FileName);
+			CLEAR_STR(MimeType);
+			RESET_ULONGLONG(FileSize);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Thumb);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "thumb",          Thumb       );
+			GetValueFromJSON(ObjectEntry, "file_name",      FileName    );
+			GetValueFromJSON(ObjectEntry, "mime_type",      MimeType    );
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "thumb",          Thumb       );
+			PutValueToJSON(ostream, "file_name",      FileName    );
+			PutValueToJSON(ostream, "mime_type",      MimeType    );
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Video : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString     FileId;
+		SMAnsiString     FileUniqueId;
+		int              Width;
+		int              Height;
+		int              Duration;
+		TGBOT_PhotoSize* Thumb;
+		SMAnsiString     FileName;
+		SMAnsiString     MimeType;
+		size_t           FileSize;
+
+		ADD_CONSTRUCTORS(TGBOT_Video)
+		ADD_DESTRUCTORS(TGBOT_Video)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Width);
+			RESET_INT(Height);
+			RESET_INT(Duration);
+			RESET_PTR(Thumb);
+			CLEAR_STR(FileName);
+			CLEAR_STR(MimeType);
+			RESET_ULONGLONG(FileSize);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Thumb);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "width",          Width       );
+			GetValueFromJSON(ObjectEntry, "height",         Height      );
+			GetValueFromJSON(ObjectEntry, "duration",       Duration    );
+			GetValueFromJSON(ObjectEntry, "thumb",          Thumb       );
+			GetValueFromJSON(ObjectEntry, "file_name",      FileName    );
+			GetValueFromJSON(ObjectEntry, "mime_type",      MimeType    );
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "width",          Width       );
+			PutValueToJSON(ostream, "height",         Height      );
+			PutValueToJSON(ostream, "duration",       Duration    );
+			PutValueToJSON(ostream, "thumb",          Thumb       );
+			PutValueToJSON(ostream, "file_name",      FileName    );
+			PutValueToJSON(ostream, "mime_type",      MimeType    );
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_VideoNote : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString     FileId;
+		SMAnsiString     FileUniqueId;
+		int              Length;
+		int              Duration;
+		TGBOT_PhotoSize* Thumb;
+		size_t           FileSize;
+
+		ADD_CONSTRUCTORS(TGBOT_VideoNote)
+		ADD_DESTRUCTORS(TGBOT_VideoNote)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Length);
+			RESET_INT(Duration);
+			RESET_PTR(Thumb);
+			RESET_ULONGLONG(FileSize);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Thumb);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "length",         Length      );
+			GetValueFromJSON(ObjectEntry, "duration",       Duration    );
+			GetValueFromJSON(ObjectEntry, "thumb",          Thumb       );
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "length",         Length      );
+			PutValueToJSON(ostream, "duration",       Duration    );
+			PutValueToJSON(ostream, "thumb",          Thumb       );
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Voice : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString     FileId;
+		SMAnsiString     FileUniqueId;
+		int              Duration;
+		SMAnsiString     MimeType;
+		size_t           FileSize;
+
+		ADD_CONSTRUCTORS(TGBOT_Voice)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_INT(Duration);
+			CLEAR_STR(MimeType);
+			RESET_ULONGLONG(FileSize);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "duration",       Duration    );
+			GetValueFromJSON(ObjectEntry, "mime_type",      MimeType    );
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "duration",       Duration    );
+			PutValueToJSON(ostream, "mime_type",      MimeType    );
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Dice : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Emoji;
+		int          Value;
+
+		ADD_CONSTRUCTORS(TGBOT_Dice)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Emoji);
+			RESET_INT(Value);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "emoji", Emoji);
+			GetValueFromJSON(ObjectEntry, "value", Value);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "emoji", Emoji);
+			PutValueToJSON(ostream, "value", Value);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Game : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString                     Title;
+		SMAnsiString                     Description;
+		TGBOT_ARRAY(TGBOT_PhotoSize)     Photo;
+		SMAnsiString                     Text;
+		TGBOT_ARRAY(TGBOT_MessageEntity) TextEntities;
+		TGBOT_Animation*                 Animation;
+
+		ADD_CONSTRUCTORS(TGBOT_Game)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Title);
+			CLEAR_STR(Description);
+			CLEAR_STR(Text);
+			RESET_PTR(Animation);
+		}
+		virtual void FreeAll() override
+		{
+			Photo.clear();
+			TextEntities.clear();
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "title",         Title         );
+			GetValueFromJSON(ObjectEntry, "description",   Description   );
+			GetArrayFromJSON(ObjectEntry, "photo",         Photo         );
+			GetValueFromJSON(ObjectEntry, "text",          Text          );
+			GetArrayFromJSON(ObjectEntry, "text_entities", TextEntities  );
+			GetValueFromJSON(ObjectEntry, "animation",     Animation     );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "title",         Title         );
+			PutValueToJSON(ostream, "description",   Description   );
+			PutArrayToJSON(ostream, "photo",         Photo         );
+			PutValueToJSON(ostream, "text",          Text          );
+			PutArrayToJSON(ostream, "text_entities", TextEntities  );
+			PutValueToJSON(ostream, "animation",     Animation     );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_PollOption : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Id;
+		uint64_t     VoterCount;
+
+		ADD_CONSTRUCTORS(TGBOT_PollOption)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Id);
+			RESET_ULONGLONG(VoterCount);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "id",          Id        );
+			GetValueFromJSON(ObjectEntry, "voter_count", VoterCount);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "id",          Id        );
+			PutValueToJSON(ostream, "voter_count", VoterCount);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Poll : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString                     Id;
+		SMAnsiString                     Question;
+		TGBOT_ARRAY(TGBOT_PollOption)    Options;
+		uint64_t                         TotalVoterCount;
+		bool                             IsClosed;
+		bool                             IsAnonymous;
+		SMAnsiString                     Type;
+		bool                             AllowsMultipleAnswers;
+		uint64_t                         CorrectOptionId;
+		SMAnsiString                     Explanation;
+		TGBOT_ARRAY(TGBOT_MessageEntity) ExplanationEntities;
+		long long                        OpenPeriod;
+		time_t                           CloseDate;
+
+		ADD_CONSTRUCTORS(TGBOT_Poll)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Id);
+			CLEAR_STR(Question);
+			RESET_ULONGLONG(TotalVoterCount);
+			RESET_BOOL(IsClosed);
+			RESET_BOOL(IsAnonymous);
+			CLEAR_STR(Type);
+			RESET_BOOL(AllowsMultipleAnswers);
+			RESET_ULONGLONG(CorrectOptionId);
+			CLEAR_STR(Explanation);
+			RESET_LONGLONG(OpenPeriod);
+			RESET_INT(CloseDate);
+		}
+		virtual void FreeAll() override
+		{
+			Options.clear();
+			ExplanationEntities.clear();
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "id",                      Id                   );
+			GetValueFromJSON(ObjectEntry, "question",                Question             );
+			GetArrayFromJSON(ObjectEntry, "option",                  Options              );
+			GetValueFromJSON(ObjectEntry, "total_voter_count",       TotalVoterCount      );
+			GetValueFromJSON(ObjectEntry, "is_closed",               IsClosed             );
+			GetValueFromJSON(ObjectEntry, "is_anonymous",            IsAnonymous          );
+			GetValueFromJSON(ObjectEntry, "type",                    Type                 );
+			GetValueFromJSON(ObjectEntry, "allows_multiple_answers", AllowsMultipleAnswers);
+			GetValueFromJSON(ObjectEntry, "correct_option_id",       CorrectOptionId      );
+			GetValueFromJSON(ObjectEntry, "explanation",             Explanation          );
+			GetArrayFromJSON(ObjectEntry, "explanation_entities",    ExplanationEntities  );
+			GetValueFromJSON(ObjectEntry, "open_period",             OpenPeriod           );
+			GetValueFromJSON(ObjectEntry, "close_date",              CloseDate            );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "id",                      Id                   );
+			PutValueToJSON(ostream, "question",                Question             );
+			PutArrayToJSON(ostream, "option",                  Options              );
+			PutValueToJSON(ostream, "total_voter_count",       TotalVoterCount      );
+			PutValueToJSON(ostream, "is_closed",               IsClosed             );
+			PutValueToJSON(ostream, "is_anonymous",            IsAnonymous          );
+			PutValueToJSON(ostream, "type",                    Type                 );
+			PutValueToJSON(ostream, "allows_multiple_answers", AllowsMultipleAnswers);
+			PutValueToJSON(ostream, "correct_option_id",       CorrectOptionId      );
+			PutValueToJSON(ostream, "explanation",             Explanation          );
+			PutArrayToJSON(ostream, "explanation_entities",    ExplanationEntities  );
+			PutValueToJSON(ostream, "open_period",             OpenPeriod           );
+			PutValueToJSON(ostream, "close_date",              CloseDate            );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Venue : public TGBOT_API_Class
+{
+	public:
+		TGBOT_Location* Location;
+		SMAnsiString    Title;
+		SMAnsiString    Address;
+		SMAnsiString    FoursquareId;
+		SMAnsiString    FoursquareType;
+		SMAnsiString    GooglePlaceId;
+		SMAnsiString    GooglePlaceType;
+
+		ADD_CONSTRUCTORS(TGBOT_Venue)
+
+		virtual void InitAll() override
+		{
+			RESET_PTR(Location);
+			CLEAR_STR(Title);
+			CLEAR_STR(Address);
+			CLEAR_STR(FoursquareId);
+			CLEAR_STR(FoursquareType);
+			CLEAR_STR(GooglePlaceId);
+			CLEAR_STR(GooglePlaceType);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Location);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "location",          Location       );
+			GetValueFromJSON(ObjectEntry, "title",             Title          );
+			GetValueFromJSON(ObjectEntry, "address",           Address        );
+			GetValueFromJSON(ObjectEntry, "foursquare_id",     FoursquareId   );
+			GetValueFromJSON(ObjectEntry, "foursquare_type",   FoursquareType );
+			GetValueFromJSON(ObjectEntry, "google_place_id",   GooglePlaceId  );
+			GetValueFromJSON(ObjectEntry, "google_place_type", GooglePlaceType);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "location",          Location       );
+			PutValueToJSON(ostream, "title",             Title          );
+			PutValueToJSON(ostream, "address",           Address        );
+			PutValueToJSON(ostream, "foursquare_id",     FoursquareId   );
+			PutValueToJSON(ostream, "foursquare_type",   FoursquareType );
+			PutValueToJSON(ostream, "google_place_id",   GooglePlaceId  );
+			PutValueToJSON(ostream, "google_place_type", GooglePlaceType);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_MessageAutoDeleteTimerChanged : public TGBOT_API_Class
+{
+	public:
+		long long MessageAutoDeleteTime;
+
+		ADD_CONSTRUCTORS(TGBOT_MessageAutoDeleteTimerChanged)
+
+		virtual void InitAll() override
+		{
+			RESET_LONGLONG(MessageAutoDeleteTime);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "message_auto_delete_time", MessageAutoDeleteTime);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "message_auto_delete_time", MessageAutoDeleteTime);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_Invoice : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Title;
+		SMAnsiString Description;
+		SMAnsiString StartParameter;
+		SMAnsiString Currency;
+		long long    TotalAmount;
+
+		ADD_CONSTRUCTORS(TGBOT_Invoice)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Title);
+			CLEAR_STR(Description);
+			CLEAR_STR(StartParameter);
+			CLEAR_STR(Currency);
+			RESET_LONGLONG(TotalAmount);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "title",           Title         );
+			GetValueFromJSON(ObjectEntry, "description",     Description   );
+			GetValueFromJSON(ObjectEntry, "start_parameter", StartParameter);
+			GetValueFromJSON(ObjectEntry, "currency",        Currency      );
+			GetValueFromJSON(ObjectEntry, "total_amount",    TotalAmount   );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "title",           Title         );
+			PutValueToJSON(ostream, "description",     Description   );
+			PutValueToJSON(ostream, "start_parameter", StartParameter);
+			PutValueToJSON(ostream, "currency",        Currency      );
+			PutValueToJSON(ostream, "total_amount",    TotalAmount   );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_ShippingAddress : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString CountryCode;
+		SMAnsiString State;
+		SMAnsiString City;
+		SMAnsiString StreetLine1;
+		SMAnsiString StreetLine2;
+		SMAnsiString PostCode;
+
+		ADD_CONSTRUCTORS(TGBOT_ShippingAddress)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(CountryCode);
+			CLEAR_STR(State);
+			CLEAR_STR(City);
+			CLEAR_STR(StreetLine1);
+			CLEAR_STR(StreetLine2);
+			CLEAR_STR(PostCode);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "country_code", CountryCode);
+			GetValueFromJSON(ObjectEntry, "state",        State      );
+			GetValueFromJSON(ObjectEntry, "city",         City       );
+			GetValueFromJSON(ObjectEntry, "street_line1", StreetLine1);
+			GetValueFromJSON(ObjectEntry, "street_line2", StreetLine2);
+			GetValueFromJSON(ObjectEntry, "post_code",    PostCode   );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "country_code", CountryCode);
+			PutValueToJSON(ostream, "state",        State      );
+			PutValueToJSON(ostream, "city",         City       );
+			PutValueToJSON(ostream, "street_line1", StreetLine1);
+			PutValueToJSON(ostream, "street_line2", StreetLine2);
+			PutValueToJSON(ostream, "post_code",    PostCode   );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_OrderInfo : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString           Name;
+		SMAnsiString           PhoneNumber;
+		SMAnsiString           Email;
+		TGBOT_ShippingAddress* ShippingAddress;
+
+		ADD_CONSTRUCTORS(TGBOT_OrderInfo)
+		ADD_DESTRUCTORS(TGBOT_OrderInfo)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Name);
+			CLEAR_STR(PhoneNumber);
+			CLEAR_STR(Email);
+			RESET_PTR(ShippingAddress);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(ShippingAddress);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "name",             Name           );
+			GetValueFromJSON(ObjectEntry, "phone_number",     PhoneNumber    );
+			GetValueFromJSON(ObjectEntry, "email",            Email          );
+			GetValueFromJSON(ObjectEntry, "shipping_address", ShippingAddress);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "name",             Name           );
+			PutValueToJSON(ostream, "phone_number",     PhoneNumber    );
+			PutValueToJSON(ostream, "email",            Email          );
+			PutValueToJSON(ostream, "shipping_address", ShippingAddress);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_SuccessfulPayment : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString           Currency;
+		long long              TotalAmount;
+		SMAnsiString           InvoicePayload;
+		SMAnsiString           ShippingOptionId;
+		TGBOT_OrderInfo*       OrderInfo;
+		SMAnsiString           TelegramPaymentChargeId;
+		SMAnsiString           ProviderPaymentChargeId;
+
+		ADD_CONSTRUCTORS(TGBOT_SuccessfulPayment)
+		ADD_DESTRUCTORS(TGBOT_SuccessfulPayment)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Currency);
+			RESET_LONGLONG(TotalAmount);
+			CLEAR_STR(InvoicePayload);
+			CLEAR_STR(ShippingOptionId);
+			RESET_PTR(OrderInfo);
+			CLEAR_STR(TelegramPaymentChargeId);
+			CLEAR_STR(ProviderPaymentChargeId);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(OrderInfo);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "currency",                   Currency               );
+			GetValueFromJSON(ObjectEntry, "total_amount",               TotalAmount            );
+			GetValueFromJSON(ObjectEntry, "invoice_payload",            InvoicePayload         );
+			GetValueFromJSON(ObjectEntry, "shipping_option_id",         ShippingOptionId       );
+			GetValueFromJSON(ObjectEntry, "order_info",                 OrderInfo              );
+			GetValueFromJSON(ObjectEntry, "telegram_payment_charge_id", TelegramPaymentChargeId);
+			GetValueFromJSON(ObjectEntry, "provider_payment_charge_id", ProviderPaymentChargeId);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "currency",                   Currency               );
+			PutValueToJSON(ostream, "total_amount",               TotalAmount            );
+			PutValueToJSON(ostream, "invoice_payload",            InvoicePayload         );
+			PutValueToJSON(ostream, "shipping_option_id",         ShippingOptionId       );
+			PutValueToJSON(ostream, "order_info",                 OrderInfo              );
+			PutValueToJSON(ostream, "telegram_payment_charge_id", TelegramPaymentChargeId);
+			PutValueToJSON(ostream, "provider_payment_charge_id", ProviderPaymentChargeId);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_EncryptedCredentials : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Data;
+		SMAnsiString Hash;
+		SMAnsiString Secret;
+
+		ADD_CONSTRUCTORS(TGBOT_EncryptedCredentials)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Data);
+			CLEAR_STR(Hash);
+			CLEAR_STR(Secret);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "data",   Data  );
+			GetValueFromJSON(ObjectEntry, "hash",   Hash  );
+			GetValueFromJSON(ObjectEntry, "secret", Secret);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "data",   Data  );
+			PutValueToJSON(ostream, "hash",   Hash  );
+			PutValueToJSON(ostream, "secret", Secret);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_PassportFile : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString FileId;
+		SMAnsiString FileUniqueId;
+		uint64_t     FileSize;
+		time_t       FileDate;
+
+		ADD_CONSTRUCTORS(TGBOT_PassportFile)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(FileId);
+			CLEAR_STR(FileUniqueId);
+			RESET_ULONGLONG(FileSize);
+			RESET_INT(FileDate);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "file_id",        FileId      );
+			GetValueFromJSON(ObjectEntry, "file_unique_id", FileUniqueId);
+			GetValueFromJSON(ObjectEntry, "file_size",      FileSize    );
+			GetValueFromJSON(ObjectEntry, "file_date",      FileDate    );
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "file_id",        FileId      );
+			PutValueToJSON(ostream, "file_unique_id", FileUniqueId);
+			PutValueToJSON(ostream, "file_size",      FileSize    );
+			PutValueToJSON(ostream, "file_date",      FileDate    );
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_EncryptedPassportElement : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString                    Type;
+		SMAnsiString                    Data;
+		SMAnsiString                    PhoneNumber;
+		SMAnsiString                    Email;
+		TGBOT_ARRAY(TGBOT_PassportFile) Files;
+		TGBOT_PassportFile*             FrontSide;
+		TGBOT_PassportFile*             ReverseSide;
+		TGBOT_PassportFile*             Selfie;
+		TGBOT_ARRAY(TGBOT_PassportFile) Translation;
+		SMAnsiString                    Hash;
+
+		ADD_CONSTRUCTORS(TGBOT_EncryptedPassportElement)
+		ADD_DESTRUCTORS(TGBOT_EncryptedPassportElement)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Type);
+			CLEAR_STR(Data);
+			CLEAR_STR(PhoneNumber);
+			CLEAR_STR(Email);
+			RESET_PTR(FrontSide);
+			RESET_PTR(ReverseSide);
+			RESET_PTR(Selfie);
+			CLEAR_STR(Hash);
+		}
+		virtual void FreeAll() override
+		{
+			Files.clear();
+			Translation.clear();
+			DELETE_SINGLE_OBJECT(FrontSide);
+			DELETE_SINGLE_OBJECT(ReverseSide);
+			DELETE_SINGLE_OBJECT(Selfie);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "type",         Type);
+			GetValueFromJSON(ObjectEntry, "data",         Data);
+			GetValueFromJSON(ObjectEntry, "phone_number", PhoneNumber);
+			GetValueFromJSON(ObjectEntry, "email",        Email);
+			GetArrayFromJSON(ObjectEntry, "files",        Files);
+			GetValueFromJSON(ObjectEntry, "front_side",   FrontSide);
+			GetValueFromJSON(ObjectEntry, "reverse_side", ReverseSide);
+			GetValueFromJSON(ObjectEntry, "selfie",       Selfie);
+			GetArrayFromJSON(ObjectEntry, "translation",  Translation);
+			GetValueFromJSON(ObjectEntry, "hash",         Hash);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "type",         Type);
+			PutValueToJSON(ostream, "data",         Data);
+			PutValueToJSON(ostream, "phone_number", PhoneNumber);
+			PutValueToJSON(ostream, "email",        Email);
+			PutArrayToJSON(ostream, "files",        Files);
+			PutValueToJSON(ostream, "front_side",   FrontSide);
+			PutValueToJSON(ostream, "reverse_side", ReverseSide);
+			PutValueToJSON(ostream, "selfie",       Selfie);
+			PutArrayToJSON(ostream, "translation",  Translation);
+			PutValueToJSON(ostream, "hash",         Hash);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_PassportData : public TGBOT_API_Class
+{
+	public:
+		TGBOT_ARRAY(TGBOT_EncryptedPassportElement) Data;
+		TGBOT_EncryptedCredentials*                 Credentials;
+
+		ADD_CONSTRUCTORS(TGBOT_PassportData)
+		ADD_DESTRUCTORS(TGBOT_PassportData)
+
+		virtual void InitAll() override
+		{
+			RESET_PTR(Credentials);
+		}
+		virtual void FreeAll() override
+		{
+			Data.clear();
+			DELETE_SINGLE_OBJECT(Credentials);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetArrayFromJSON(ObjectEntry, "data",        Data       );
+			GetValueFromJSON(ObjectEntry, "credentials", Credentials);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutArrayToJSON(ostream, "data",        Data       );
+			PutValueToJSON(ostream, "credentials", Credentials);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_ProximityAlertTriggered : public TGBOT_API_Class
+{
+	public:
+		TGBOT_User* Traveler;
+		TGBOT_User* Watcher;
+		int         Distance;
+
+		ADD_CONSTRUCTORS(TGBOT_ProximityAlertTriggered)
+		ADD_DESTRUCTORS(TGBOT_ProximityAlertTriggered)
+
+		virtual void InitAll() override
+		{
+			RESET_PTR(Traveler);
+			RESET_PTR(Watcher);
+			RESET_INT(Distance);
+		}
+		virtual void FreeAll() override
+		{
+			DELETE_SINGLE_OBJECT(Traveler);
+			DELETE_SINGLE_OBJECT(Watcher);
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "traveler", Traveler);
+			GetValueFromJSON(ObjectEntry, "watcher",  Watcher );
+			GetValueFromJSON(ObjectEntry, "distance", Distance);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "traveler", Traveler);
+			PutValueToJSON(ostream, "watcher",  Watcher );
+			PutValueToJSON(ostream, "distance", Distance);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_ForumTopicCreated : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Name;
+		int          IconColor;
+		SMAnsiString IconCustomEmojiId;
+
+		ADD_CONSTRUCTORS(TGBOT_ForumTopicCreated)
+
+		virtual void InitAll() override
+		{
+			CLEAR_STR(Name);
+			RESET_INT(IconColor);
+			CLEAR_STR(IconCustomEmojiId);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "name",                 Name             );
+			GetValueFromJSON(ObjectEntry, "icon_color",           IconColor        );
+			GetValueFromJSON(ObjectEntry, "icon_custom_emoji_id", IconCustomEmojiId);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "name",                 Name             );
+			PutValueToJSON(ostream, "icon_color",           IconColor        );
+			PutValueToJSON(ostream, "icon_custom_emoji_id", IconCustomEmojiId);
+			return std::move(ostream);
+		}
+};
+
+// TODO: пока не содержит инфы, зайди в документацию и проверь актуальность
+class TGBOT_ForumTopicClosed : public TGBOT_API_Class
+{
+	public:
+		int dummy;
+
+		ADD_CONSTRUCTORS(TGBOT_ForumTopicClosed)
+
+		virtual void InitAll() override {}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override {}
+		virtual SMAnsiString ToJSON() const override { return SMAnsiString("{}"); }
+};
+
+// TODO: пока не содержит инфы, зайди в документацию и проверь актуальность
+class TGBOT_ForumTopicReopened : public TGBOT_API_Class
+{
+	public:
+		int dummy;
+
+		ADD_CONSTRUCTORS(TGBOT_ForumTopicReopened)
+
+		virtual void InitAll() override {}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override {}
+		virtual SMAnsiString ToJSON() const override { return SMAnsiString("{}"); }
+};
+
+class TGBOT_VideoChatScheduled : public TGBOT_API_Class
+{
+	public:
+		time_t StartDate;
+
+		ADD_CONSTRUCTORS(TGBOT_VideoChatScheduled)
+
+		virtual void InitAll() override
+		{
+			RESET_INT(StartDate);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "start_date", StartDate);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "start_date", StartDate);
+			return std::move(ostream);
+		}
+};
+
+// TODO: пока не содержит инфы, зайди в документацию и проверь актуальность
+class TGBOT_VideoChatStarted : public TGBOT_API_Class
+{
+	public:
+		int dummy;
+
+		ADD_CONSTRUCTORS(TGBOT_VideoChatStarted)
+
+		virtual void InitAll() override {}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override {}
+		virtual SMAnsiString ToJSON() const override { return SMAnsiString("{}"); }
+};
+
+class TGBOT_VideoChatEnded : public TGBOT_API_Class
+{
+	public:
+		int Duration;
+
+		ADD_CONSTRUCTORS(TGBOT_VideoChatEnded)
+
+		virtual void InitAll() override
+		{
+			RESET_INT(Duration);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "duration", Duration);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "duration", Duration);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_VideoChatParticipantsInvited : public TGBOT_API_Class
+{
+	public:
+		TGBOT_ARRAY(TGBOT_User) Users;
+
+		ADD_CONSTRUCTORS(TGBOT_VideoChatParticipantsInvited)
+
+		virtual void InitAll() override {}
+		virtual void FreeAll() override 
+		{
+			Users.clear();
+		}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetArrayFromJSON(ObjectEntry, "users", Users);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutArrayToJSON(ostream, "users", Users);
+			return std::move(ostream);
+		}
+};
+
+class TGBOT_WebAppData : public TGBOT_API_Class
+{
+	public:
+		SMAnsiString Data;
+		SMAnsiString ButtonText;
+
+		ADD_CONSTRUCTORS(TGBOT_WebAppData)
+
+		virtual void InitAll() override 
+		{
+			CLEAR_STR(Data);
+			CLEAR_STR(ButtonText);
+		}
+		virtual void FreeAll() override {}
+
+		virtual void FromJSON(json_t* ObjectEntry) override
+		{
+			FreeAll();
+			InitAll();
+			GetValueFromJSON(ObjectEntry, "data",        Data      );
+			GetValueFromJSON(ObjectEntry, "button_text", ButtonText);
+		}
+		virtual SMAnsiString ToJSON() const override
+		{
+			SMAnsiString ostream;
+			PutValueToJSON(ostream, "data",        Data      );
+			PutValueToJSON(ostream, "button_text", ButtonText);
+			return std::move(ostream);
+		}
+};
+
 class TGBOT_Message : public TGBOT_API_Class
 {
 	public:
-		uint64_t                     MessageId;
-		uint64_t                     MessageThreadId;
-		TGBOT_User*                  From;
-		time_t                       Date;
-		TGBOT_Chat*                  Chat;
-		TGBOT_User*                  ForwardFrom;
-		TGBOT_Chat*                  ForwardFromChat;
-		uint64_t                     ForwardFromMessageId;
-		SMAnsiString                 ForwardSignature;
-		SMAnsiString                 ForwardSenderName;
-		time_t                       ForwardDate;
-		bool                         IsTopicMessage;
-		bool                         IsAutomaticForward;
-		TGBOT_Message*               ReplyToMessage;
-		time_t                       EditDate;
-		bool                         HasProtectedContent;
-		SMAnsiString                 MediaGroupId;
-		SMAnsiString                 AuthorSignature;
-		SMAnsiString                 Text;
-		TGBOT_ARRAY(TGBOT_MessageEntity) Entities;
-		TGBOT_ARRAY(TGBOT_PhotoSize) Photo;
-		TGBOT_Sticker*               Sticker;
-		SMAnsiString                 Caption;
-		TGBOT_Contact*               Contact;
-		SMAnsiString                 NewChatTitle;
-		bool                         DeleteChatPhoto;
-		bool                         GroupChatCreated;
-		bool                         SupergroupChatCreated;
-		bool                         ChannelChatCreated;
-		TGBOT_InlineKeyboardMarkup*  ReplyMarkup;
+		uint64_t                             MessageId;
+		uint64_t                             MessageThreadId;
+		TGBOT_User*                          From;
+		TGBOT_Chat*                          SenderChat;
+		time_t                               Date;
+		TGBOT_Chat*                          Chat;
+		TGBOT_User*                          ForwardFrom;
+		TGBOT_Chat*                          ForwardFromChat;
+		uint64_t                             ForwardFromMessageId;
+		SMAnsiString                         ForwardSignature;
+		SMAnsiString                         ForwardSenderName;
+		time_t                               ForwardDate;
+		bool                                 IsTopicMessage;
+		bool                                 IsAutomaticForward;
+		TGBOT_Message*                       ReplyToMessage;
+		TGBOT_User*                          ViaBot;
+		time_t                               EditDate;
+		bool                                 HasProtectedContent;
+		SMAnsiString                         MediaGroupId;
+		SMAnsiString                         AuthorSignature;
+		SMAnsiString                         Text;
+		TGBOT_ARRAY(TGBOT_MessageEntity)     Entities;
+		TGBOT_Animation*                     Animation;
+		TGBOT_Audio*                         Audio;
+		TGBOT_Document*                      Document;
+		TGBOT_ARRAY(TGBOT_PhotoSize)         Photo;
+		TGBOT_Sticker*                       Sticker;
+		TGBOT_Video*                         Video;
+		TGBOT_VideoNote*                     VideoNote;
+		TGBOT_Voice*                         Voice;
+		SMAnsiString                         Caption;
+		TGBOT_ARRAY(TGBOT_MessageEntity)     CaptionEntities;
+		TGBOT_Contact*                       Contact;
+		TGBOT_Dice*                          Dice;
+		TGBOT_Game*                          Game;
+		TGBOT_Poll*                          Poll;
+		TGBOT_Venue*                         Venue;
+		TGBOT_Location*                      Location;
+		TGBOT_ARRAY(TGBOT_User)              NewChatMembers;
+		TGBOT_User*                          LeftChatMember;
+		SMAnsiString                         NewChatTitle;
+		TGBOT_ARRAY(TGBOT_PhotoSize)         NewChatPhoto;
+		bool                                 DeleteChatPhoto;
+		bool                                 GroupChatCreated;
+		bool                                 SupergroupChatCreated;
+		bool                                 ChannelChatCreated;
+		TGBOT_MessageAutoDeleteTimerChanged* MessageAutoDeleteTimerChanged;
+		uint64_t                             MigrateToChatId;
+		uint64_t                             MigrateFromChatId;
+		TGBOT_Message*                       PinnedMessage;
+		TGBOT_Invoice*                       Invoice;
+		TGBOT_SuccessfulPayment*             SuccessfulPayment;
+		TGBOT_PassportData*                  PassportData;
+		TGBOT_ProximityAlertTriggered*       ProximityAlertTriggered;
+		TGBOT_ForumTopicCreated*             ForumTopicCreated;
+		TGBOT_ForumTopicClosed*              ForumTopicClosed;
+		TGBOT_ForumTopicReopened*            ForumTopicReopened;
+		TGBOT_VideoChatScheduled*            VideoChatScheduled;
+		TGBOT_VideoChatStarted*              VideoChatStarted;
+		TGBOT_VideoChatEnded*                VideoChatEnded;
+		TGBOT_VideoChatParticipantsInvited*  VideoChatParticipantsInvited;
+		TGBOT_WebAppData*                    WebAppData;
+		TGBOT_InlineKeyboardMarkup*          ReplyMarkup;
 
 		ADD_EXTERNAL_CONSTRUCTORS(TGBOT_Message)
 		ADD_EXTERNAL_DESTRUCTORS(TGBOT_Message)
@@ -1264,70 +2464,136 @@ class TGBOT_Message : public TGBOT_API_Class
 		{
 			FreeAll();
 			InitAll();
-			GetValueFromJSON(ObjectEntry, "message_id",              MessageId            );
-			GetValueFromJSON(ObjectEntry, "message_thread_id",       MessageThreadId      );
-			GetValueFromJSON(ObjectEntry, "from",                    From                 );
-			GetValueFromJSON(ObjectEntry, "date",                    Date                 );
-			GetValueFromJSON(ObjectEntry, "chat",                    Chat                 );
-			GetValueFromJSON(ObjectEntry, "forward_from",            ForwardFrom          );
-			GetValueFromJSON(ObjectEntry, "forward_from_chat",       ForwardFromChat      );
-			GetValueFromJSON(ObjectEntry, "forward_from_message_id", ForwardFromMessageId );
-			GetValueFromJSON(ObjectEntry, "forward_signature",       ForwardSignature     );
-			GetValueFromJSON(ObjectEntry, "forward_sender_name",     ForwardSenderName    );
-			GetValueFromJSON(ObjectEntry, "forward_date",            ForwardDate          );
-			GetValueFromJSON(ObjectEntry, "is_topic_message",        IsTopicMessage       );
-			GetValueFromJSON(ObjectEntry, "is_automatic_forward",    IsAutomaticForward   );
-			GetValueFromJSON(ObjectEntry, "reply_to_message",        ReplyToMessage       );
-			GetValueFromJSON(ObjectEntry, "edit_date",               EditDate             );
-			GetValueFromJSON(ObjectEntry, "has_protected_content",   HasProtectedContent  );
-			GetValueFromJSON(ObjectEntry, "media_group_id",          MediaGroupId         );
-			GetValueFromJSON(ObjectEntry, "author_signature",        AuthorSignature      );
-			GetValueFromJSON(ObjectEntry, "text",                    Text                 );
-			GetArrayFromJSON(ObjectEntry, "entities",                Entities             );
-			GetArrayFromJSON(ObjectEntry, "photo",                   Photo                );
-			GetValueFromJSON(ObjectEntry, "sticker",                 Sticker              );
-			GetValueFromJSON(ObjectEntry, "caption",                 Caption              );
-			GetValueFromJSON(ObjectEntry, "contact",                 Contact              );
-			GetValueFromJSON(ObjectEntry, "new_chat_title",          NewChatTitle         );
-			GetValueFromJSON(ObjectEntry, "delete_chat_photo",       DeleteChatPhoto      );
-			GetValueFromJSON(ObjectEntry, "group_chat_created",      GroupChatCreated     );
-			GetValueFromJSON(ObjectEntry, "supergroup_chat_created", SupergroupChatCreated);
-			GetValueFromJSON(ObjectEntry, "channel_chat_created",    ChannelChatCreated   );
-			GetValueFromJSON(ObjectEntry, "reply_markup",            ReplyMarkup          );
+			GetValueFromJSON(ObjectEntry, "message_id",                        MessageId                    );
+			GetValueFromJSON(ObjectEntry, "message_thread_id",                 MessageThreadId              );
+			GetValueFromJSON(ObjectEntry, "from",                              From                         );
+			GetValueFromJSON(ObjectEntry, "sender_chat",                       SenderChat                   );
+			GetValueFromJSON(ObjectEntry, "date",                              Date                         );
+			GetValueFromJSON(ObjectEntry, "chat",                              Chat                         );
+			GetValueFromJSON(ObjectEntry, "forward_from",                      ForwardFrom                  );
+			GetValueFromJSON(ObjectEntry, "forward_from_chat",                 ForwardFromChat              );
+			GetValueFromJSON(ObjectEntry, "forward_from_message_id",           ForwardFromMessageId         );
+			GetValueFromJSON(ObjectEntry, "forward_signature",                 ForwardSignature             );
+			GetValueFromJSON(ObjectEntry, "forward_sender_name",               ForwardSenderName            );
+			GetValueFromJSON(ObjectEntry, "forward_date",                      ForwardDate                  );
+			GetValueFromJSON(ObjectEntry, "is_topic_message",                  IsTopicMessage               );
+			GetValueFromJSON(ObjectEntry, "is_automatic_forward",              IsAutomaticForward           );
+			GetValueFromJSON(ObjectEntry, "reply_to_message",                  ReplyToMessage               );
+			GetValueFromJSON(ObjectEntry, "via_bot",                           ViaBot                       );
+			GetValueFromJSON(ObjectEntry, "edit_date",                         EditDate                     );
+			GetValueFromJSON(ObjectEntry, "has_protected_content",             HasProtectedContent          );
+			GetValueFromJSON(ObjectEntry, "media_group_id",                    MediaGroupId                 );
+			GetValueFromJSON(ObjectEntry, "author_signature",                  AuthorSignature              );
+			GetValueFromJSON(ObjectEntry, "text",                              Text                         );
+			GetArrayFromJSON(ObjectEntry, "entities",                          Entities                     );
+			GetValueFromJSON(ObjectEntry, "animation",                         Animation                    );
+			GetValueFromJSON(ObjectEntry, "audio",                             Audio                        );
+			GetValueFromJSON(ObjectEntry, "document",                          Document                     );
+			GetArrayFromJSON(ObjectEntry, "photo",                             Photo                        );
+			GetValueFromJSON(ObjectEntry, "sticker",                           Sticker                      );
+			GetValueFromJSON(ObjectEntry, "video",                             Video                        );
+			GetValueFromJSON(ObjectEntry, "video_note",                        VideoNote                    );
+			GetValueFromJSON(ObjectEntry, "voice",                             Voice                        );
+			GetValueFromJSON(ObjectEntry, "caption",                           Caption                      );
+			GetArrayFromJSON(ObjectEntry, "caption_entities",                  CaptionEntities              );
+			GetValueFromJSON(ObjectEntry, "contact",                           Contact                      );
+			GetValueFromJSON(ObjectEntry, "dice",                              Dice                         );
+			GetValueFromJSON(ObjectEntry, "game",                              Game                         );
+			GetValueFromJSON(ObjectEntry, "poll",                              Poll                         );
+			GetValueFromJSON(ObjectEntry, "venue",                             Venue                        );
+			GetValueFromJSON(ObjectEntry, "location",                          Location                     );
+			GetArrayFromJSON(ObjectEntry, "new_chat_members",                  NewChatMembers               );
+			GetValueFromJSON(ObjectEntry, "left_chat_member",                  LeftChatMember               );
+			GetValueFromJSON(ObjectEntry, "new_chat_title",                    NewChatTitle                 );
+			GetArrayFromJSON(ObjectEntry, "new_chat_photo",                    NewChatPhoto                 );
+			GetValueFromJSON(ObjectEntry, "delete_chat_photo",                 DeleteChatPhoto              );
+			GetValueFromJSON(ObjectEntry, "group_chat_created",                GroupChatCreated             );
+			GetValueFromJSON(ObjectEntry, "supergroup_chat_created",           SupergroupChatCreated        );
+			GetValueFromJSON(ObjectEntry, "channel_chat_created",              ChannelChatCreated           );
+			GetValueFromJSON(ObjectEntry, "message_auto_delete_timer_changed", MessageAutoDeleteTimerChanged);
+			GetValueFromJSON(ObjectEntry, "migrate_to_chat_id",                MigrateToChatId              );
+			GetValueFromJSON(ObjectEntry, "migrate_from_chat_id",              MigrateFromChatId            );
+			GetValueFromJSON(ObjectEntry, "pinned_message",                    PinnedMessage                );
+			GetValueFromJSON(ObjectEntry, "invoice",                           Invoice                      );
+			GetValueFromJSON(ObjectEntry, "successful_payment",                SuccessfulPayment            );
+			GetValueFromJSON(ObjectEntry, "passport_data",                     PassportData                 );
+			GetValueFromJSON(ObjectEntry, "proximity_alert_triggered",         ProximityAlertTriggered      );
+			GetValueFromJSON(ObjectEntry, "forum_topic_created",               ForumTopicCreated            );
+			GetValueFromJSON(ObjectEntry, "forum_topic_closed",                ForumTopicClosed             );
+			GetValueFromJSON(ObjectEntry, "forum_topic_reopened",              ForumTopicReopened           );
+			GetValueFromJSON(ObjectEntry, "video_chat_scheduled",              VideoChatScheduled           );
+			GetValueFromJSON(ObjectEntry, "video_chat_started",                VideoChatStarted             );
+			GetValueFromJSON(ObjectEntry, "video_chat_ended",                  VideoChatEnded               );
+			GetValueFromJSON(ObjectEntry, "video_chat_participants_invited",   VideoChatParticipantsInvited );
+			GetValueFromJSON(ObjectEntry, "web_app_data",                      WebAppData                   );
+			GetValueFromJSON(ObjectEntry, "reply_markup",                      ReplyMarkup                  );
 		}
 		virtual SMAnsiString ToJSON() const override
 		{
 			SMAnsiString ostream;
-			PutValueToJSON(ostream, "message_id",              MessageId            );
-			PutValueToJSON(ostream, "message_thread_id",       MessageThreadId      );
-			PutValueToJSON(ostream, "from",                    From                 );
-			PutValueToJSON(ostream, "date",                    Date                 );
-			PutValueToJSON(ostream, "chat",                    Chat                 );
-			PutValueToJSON(ostream, "forward_from",            ForwardFrom          );
-			PutValueToJSON(ostream, "forward_from_chat",       ForwardFromChat      );
-			PutValueToJSON(ostream, "forward_from_message_id", ForwardFromMessageId );
-			PutValueToJSON(ostream, "forward_signature",       ForwardSignature     );
-			PutValueToJSON(ostream, "forward_sender_name",     ForwardSenderName    );
-			PutValueToJSON(ostream, "forward_date",            ForwardDate          );
-			PutValueToJSON(ostream, "is_topic_message",        IsTopicMessage       );
-			PutValueToJSON(ostream, "is_automatic_forward",    IsAutomaticForward   );
-			PutValueToJSON(ostream, "reply_to_message",        ReplyToMessage       );
-			PutValueToJSON(ostream, "edit_date",               EditDate             );
-			PutValueToJSON(ostream, "has_protected_content",   HasProtectedContent  );
-			PutValueToJSON(ostream, "media_group_id",          MediaGroupId         );
-			PutValueToJSON(ostream, "author_signature",        AuthorSignature      );
-			PutValueToJSON(ostream, "text",                    Text                 );
-			PutArrayToJSON(ostream, "entities",                Entities             );
-			PutArrayToJSON(ostream, "photo",                   Photo                );
-			PutValueToJSON(ostream, "sticker",                 Sticker              );
-			PutValueToJSON(ostream, "caption",                 Caption              );
-			PutValueToJSON(ostream, "contact",                 Contact              );
-			PutValueToJSON(ostream, "new_chat_title",          NewChatTitle         );
-			PutValueToJSON(ostream, "delete_chat_photo",       DeleteChatPhoto      );
-			PutValueToJSON(ostream, "group_chat_created",      GroupChatCreated     );
-			PutValueToJSON(ostream, "supergroup_chat_created", SupergroupChatCreated);
-			PutValueToJSON(ostream, "channel_chat_created",    ChannelChatCreated   );
-			PutValueToJSON(ostream, "reply_markup",            ReplyMarkup          );
+			PutValueToJSON(ostream, "message_id",                        MessageId                    );
+			PutValueToJSON(ostream, "message_thread_id",                 MessageThreadId              );
+			PutValueToJSON(ostream, "from",                              From                         );
+			PutValueToJSON(ostream, "sender_chat",                       SenderChat                   );
+			PutValueToJSON(ostream, "date",                              Date                         );
+			PutValueToJSON(ostream, "chat",                              Chat                         );
+			PutValueToJSON(ostream, "forward_from",                      ForwardFrom                  );
+			PutValueToJSON(ostream, "forward_from_chat",                 ForwardFromChat              );
+			PutValueToJSON(ostream, "forward_from_message_id",           ForwardFromMessageId         );
+			PutValueToJSON(ostream, "forward_signature",                 ForwardSignature             );
+			PutValueToJSON(ostream, "forward_sender_name",               ForwardSenderName            );
+			PutValueToJSON(ostream, "forward_date",                      ForwardDate                  );
+			PutValueToJSON(ostream, "is_topic_message",                  IsTopicMessage               );
+			PutValueToJSON(ostream, "is_automatic_forward",              IsAutomaticForward           );
+			PutValueToJSON(ostream, "reply_to_message",                  ReplyToMessage               );
+			PutValueToJSON(ostream, "via_bot",                           ViaBot                       );
+			PutValueToJSON(ostream, "edit_date",                         EditDate                     );
+			PutValueToJSON(ostream, "has_protected_content",             HasProtectedContent          );
+			PutValueToJSON(ostream, "media_group_id",                    MediaGroupId                 );
+			PutValueToJSON(ostream, "author_signature",                  AuthorSignature              );
+			PutValueToJSON(ostream, "text",                              Text                         );
+			PutArrayToJSON(ostream, "entities",                          Entities                     );
+			PutValueToJSON(ostream, "animation",                         Animation                    );
+			PutValueToJSON(ostream, "audio",                             Audio                        );
+			PutValueToJSON(ostream, "document",                          Document                     );
+			PutArrayToJSON(ostream, "photo",                             Photo                        );
+			PutValueToJSON(ostream, "sticker",                           Sticker                      );
+			PutValueToJSON(ostream, "video",                             Video                        );
+			PutValueToJSON(ostream, "video_note",                        VideoNote                    );
+			PutValueToJSON(ostream, "voice",                             Voice                        );
+			PutValueToJSON(ostream, "caption",                           Caption                      );
+			PutArrayToJSON(ostream, "caption_entities",                  CaptionEntities              );
+			PutValueToJSON(ostream, "contact",                           Contact                      );
+			PutValueToJSON(ostream, "dice",                              Dice                         );
+			PutValueToJSON(ostream, "game",                              Game                         );
+			PutValueToJSON(ostream, "poll",                              Poll                         );
+			PutValueToJSON(ostream, "venue",                             Venue                        );
+			PutValueToJSON(ostream, "location",                          Location                     );
+			PutArrayToJSON(ostream, "new_chat_members",                  NewChatMembers               );
+			PutValueToJSON(ostream, "left_chat_member",                  LeftChatMember               );
+			PutValueToJSON(ostream, "new_chat_title",                    NewChatTitle                 );
+			PutArrayToJSON(ostream, "new_chat_photo",                    NewChatPhoto                 );
+			PutValueToJSON(ostream, "delete_chat_photo",                 DeleteChatPhoto              );
+			PutValueToJSON(ostream, "group_chat_created",                GroupChatCreated             );
+			PutValueToJSON(ostream, "supergroup_chat_created",           SupergroupChatCreated        );
+			PutValueToJSON(ostream, "channel_chat_created",              ChannelChatCreated           );
+			PutValueToJSON(ostream, "message_auto_delete_timer_changed", MessageAutoDeleteTimerChanged);
+			PutValueToJSON(ostream, "migrate_to_chat_id",                MigrateToChatId              );
+			PutValueToJSON(ostream, "migrate_from_chat_id",              MigrateFromChatId            );
+			PutValueToJSON(ostream, "pinned_message",                    PinnedMessage                );
+			PutValueToJSON(ostream, "invoice",                           Invoice                      );
+			PutValueToJSON(ostream, "successful_payment",                SuccessfulPayment            );
+			PutValueToJSON(ostream, "passport_data",                     PassportData                 );
+			PutValueToJSON(ostream, "proximity_alert_triggered",         ProximityAlertTriggered      );
+			PutValueToJSON(ostream, "forum_topic_created",               ForumTopicCreated            );
+			PutValueToJSON(ostream, "forum_topic_closed",                ForumTopicClosed             );
+			PutValueToJSON(ostream, "forum_topic_reopened",              ForumTopicReopened           );
+			PutValueToJSON(ostream, "video_chat_scheduled",              VideoChatScheduled           );
+			PutValueToJSON(ostream, "video_chat_started",                VideoChatStarted             );
+			PutValueToJSON(ostream, "video_chat_ended",                  VideoChatEnded               );
+			PutValueToJSON(ostream, "video_chat_participants_invited",   VideoChatParticipantsInvited );
+			PutValueToJSON(ostream, "web_app_data",                      WebAppData                   );
+			PutValueToJSON(ostream, "reply_markup",                      ReplyMarkup                  );
 			return std::move(ostream);
 		}
 };
@@ -1443,8 +2709,11 @@ class TGBOT_Update : public TGBOT_API_Class
 		}
 };
 
+using TGBOTInlineKeyboardMarkupPtr = std::unique_ptr<TGBOT_InlineKeyboardMarkup>;
+
 bool tgbot_GetUpdates(std::vector<TGBOT_Update*>& updates, uint64_t offset = 0);
 uint64_t GetChatIDFromUpdate(TGBOT_Update* Upd);
+TGBOT_User* GetUserFromUpdate(TGBOT_Update* Upd);
 void tgbot_answerCallbackQuery(const SMAnsiString &CallbackQueryID);
 TGBOT_User* tgbot_getMe();
 void tgbot_SendMessage(uint64_t ChatID, const SMAnsiString &Text, TGBOT_Keyboard *Keyboard = nullptr);

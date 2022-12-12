@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <memory>
 
 #define KEYLIST_PADDING 10 // резервируем место на KEYLIST_PADDING элементов сразу, как только превысим - переаллоцируем
 
@@ -54,5 +55,7 @@ class SMUnsortedKeyList : public SMKeyList
 		SMUnsortedKeyList(size_t _mempadding): inherited(_mempadding) {}
 		virtual void AddKey(uint64_t key);
 };
+
+using SMKeyListPtr = std::unique_ptr<SMKeyList>;
 
 #endif // SMKEYLIST_HEADER
